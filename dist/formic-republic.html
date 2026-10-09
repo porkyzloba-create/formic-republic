@@ -1832,7 +1832,8 @@ function devHTML(){
     <button data-dev="super">Jump to a Supercolony</button>
     <button data-dev="rich">+1 day of output</button>
     <button data-dev="abyss" ${abyssUnlocked() ? '' : 'disabled'}>+5 torches, +200 shards</button>
-    <button data-dev="prim" ${abyssUnlocked() ? '' : 'disabled'}>+3 Primordial Packs</button></div></div>`;
+    <button data-dev="prim" ${abyssUnlocked() ? '' : 'disabled'}>+3 Primordial Packs</button>
+    <button data-dev="prim10k">+10,000 Primordial Packs</button></div></div>`;
 }
 function devAction(k){
   if (k === 'skip' || k === 'super'){ if (tutActive()){ S.flags.tut = TUT.length; S.quota = null; genQuota(); } }
@@ -1847,6 +1848,7 @@ function devAction(k){
   if (k === 'rich'){ const v = Math.max(1e6, D.baseCps * 86400); gain(v); toast('Preview', `+${fmt(v)} crumbs.`, 'gold', 'crumb'); }
   if (k === 'abyss'){ abyssDay(); S.abyss.torches += 5; S.abyss.shards += 200; toast('Preview', '+5 torches and +200 Abyssal Shards.', 'gold', 'sun'); }
   if (k === 'prim'){ S.packs.primordial = (S.packs.primordial||0) + 3; toast('Preview', '+3 Primordial Packs. Open them in Cards.', 'gold', 'cards'); }
+  if (k === 'prim10k'){ S.packs.primordial = (S.packs.primordial||0) + 10000; toast('Preview', '+10,000 Primordial Packs. Open them in Cards (up to 1,000 per tap).', 'gold', 'cards'); }
   D = derive(S); save(); render();
 }
 function sold(sku){ return !PLATFORM.skus || PLATFORM.skus.includes(sku); }
