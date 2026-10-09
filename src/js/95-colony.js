@@ -403,6 +403,14 @@ const colony = (() => {
     burst(x, y, reduce ? 3 : 7);
     if (floats.length > 30) floats.shift();
   }
+  // auto-tapper: small floats around the mound, crits in big red
+  function autoTap(v, crit){
+    const g = geo(), x = W*.5 + (Math.random()-.5)*W*.5, y = g.surf + (Math.random()-.1)*H*.3;
+    queenPulse = Math.max(queenPulse, .6);
+    if (crit){ floats.push({x: clampX(x), y, text:'CRIT! +' + fmt(v, true), life:1.2, big:true, color:'#E5392D'}); burst(x, y, reduce ? 4 : 14, '#E5392D'); }
+    else if (Math.random() < .35){ floats.push({x, y, text:'+' + fmt(v, true), life:.7}); burst(x, y, reduce ? 0 : 3); }
+    if (floats.length > 30) floats.shift();
+  }
   function droneTap(v){
     const g = geo(); queenPulse = Math.max(queenPulse, .5);
     if (Math.random() < .5) floats.push({x: g.queen[0] + (Math.random()-.5)*40, y: g.queen[1]-16, text:'+' + fmt(v, true), life:.8, color:COL.jelly});
@@ -426,6 +434,6 @@ const colony = (() => {
   function hasFlyer(){ return !!flyer; }
 
   new ResizeObserver(resize).observe(stage);
-  return {frame, rebuild, tapAt, reset, resize, droneTap, spawnAnteater, spawnFlyer, spawnRubble, busy, spawnCube, hasCube, hasFlyer, spawnGuardian, guardianActive: () => !!guard, hitGuardian: v => hitGuardian(v)};
+  return {frame, rebuild, tapAt, reset, resize, droneTap, autoTap, spawnAnteater, spawnFlyer, spawnRubble, busy, spawnCube, hasCube, hasFlyer, spawnGuardian, guardianActive: () => !!guard, hitGuardian: v => hitGuardian(v)};
 })();
 

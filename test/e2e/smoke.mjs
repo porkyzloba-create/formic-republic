@@ -144,6 +144,22 @@ try {
     const file = await dl; if (!/formic-republic\.png$/.test(file.suggestedFilename())) throw new Error('share card not offered');
     await closeModals();
   });
+  await step('auto-tapper: buy an hour with amber, then the forever version, and switch it off', async () => {
+    await ev(() => { S.gems += 500; colony.reset(); });
+    await page.click('#nav [data-group="shop"]'); await page.click('[data-shop="use"][data-id="autotap"]');
+    await page.click('#nav [data-group="hill"]'); await page.waitForTimeout(250);
+    await page.click('[data-use="autotap"]');
+    const t0 = await ev(() => S.taps); await page.waitForTimeout(1500);
+    const gained = await ev(t => S.taps - t, t0);
+    if (gained < 8) throw new Error(`auto-tapper made only ${gained} taps in 1.5s`);
+    if (!(await ev(() => /AUTO/.test(document.getElementById('buffs').textContent)))) throw new Error('no auto-tapper chip on the hill');
+    await ev(() => { S.auto.until = 0; });
+    await page.click('#nav [data-group="shop"]'); await page.click('[data-iap="autotap"]');
+    await page.click('#ad-ok'); await page.waitForTimeout(300);   // the browser build's test checkout
+    if (!(await ev(() => S.auto.forever && autoTapActive()))) throw new Error('Eternal Auto-Tapper not granted');
+    await page.click('[data-autotoggle]');
+    if (await ev(() => autoTapActive())) throw new Error('could not switch it off');
+  });
   await step('save survives a reload', async () => {
     const before = await ev(() => { save(true); return { flights: S.flights, supers: S.supers, name: S.online.acct.supabase && S.online.acct.supabase.name }; });
     await page.reload(); await page.waitForTimeout(600); await closeModals();

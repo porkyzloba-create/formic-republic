@@ -24,6 +24,14 @@ function loop(t){
 
   if (t - lastTapAt > 600) fervor = Math.max(0, fervor - dt * .35 * D.ferDecay);
   if (t < fervorLockUntil) fervor = 1;
+  const ar = autoTapRate(now);
+  if (ar){
+    autoAcc += ar * dt;
+    while (autoAcc >= 1){ autoAcc--;
+      if (colony.guardianActive()) colony.hitGuardian(hooks.guardianHit());
+      else { const v = doTap(true); colony.autoTap(v, lastCrit); }
+    }
+  } else autoAcc = 0;
   if (D.drones){
     droneAcc += D.drones * dt;
     while (droneAcc >= 1){ droneAcc--; const v = D.tapValue; if (colony.guardianActive()) colony.hitGuardian(v * D.abyssMult); else { gain(v); colony.droneTap(v); } }

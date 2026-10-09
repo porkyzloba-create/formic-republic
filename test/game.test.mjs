@@ -218,3 +218,31 @@ test('the Lottery and its history survive a Nuptial Flight', () => {
   g.run(`S.spin = {day:'2026-10-9', used:1, ads:1, total:5, jackpots:1}; nuptialFlight(S);`);
   assert.equal(g.S.spin.total, 5); assert.equal(g.S.spin.used, 1);
 });
+
+test('auto-tapper: an hour per amber usable (stacking), forever with the purchase, off in the pacifist hardship', () => {
+  const g = loadGame(); g.newGame();
+  assert.equal(g.run('autoTapRate()'), 0);
+  g.run('S.inv.autotap = 2; useItem("autotap"); useItem("autotap");');
+  const left = g.run('S.auto.until - Date.now()');
+  assert.ok(left > 7190e3 && left <= 7200e3, `two hours stacked, got ${left}`);
+  assert.equal(g.run('autoTapRate()'), 8);
+  g.run(`S.chal = 'pacifist'`); assert.equal(g.run('autoTapRate()'), 0);
+  g.run(`S.chal = null; S.auto.until = 0; grantIAP('autotap')`);
+  assert.equal(g.run('autoTapRate()'), 8);
+  g.run('S.auto.on = false'); assert.equal(g.run('autoTapRate()'), 0);
+});
+
+test('auto taps count like real taps (fervor, merit) but make no sound', () => {
+  const g = loadGame(); g.newGame();
+  g.run('var sounds = 0; Sound.tap = () => sounds++; Math.random = () => 0.99;');
+  for (let i = 0; i < 20; i++) g.run('doTap(true)');
+  assert.equal(g.S.taps, 20); assert.equal(g.run('sounds'), 0);
+  assert.equal(g.S.pass.xp, 2, '1 merit per 10 taps');
+  assert.ok(g.run('fervor') > .9);
+});
+
+test('adding usables does not reshuffle the Revolution Pass rewards', () => {
+  const g = loadGame();
+  const uses = []; for (let t = 1; t <= 30; t++){ const r = g.run(`passReward(${t}, false)`); if (r.t === 'use') uses.push(t + ':' + r.id); }
+  assert.deepEqual(uses, ['4:basket', '8:oil', '12:flare', '16:tonic', '24:hourglass', '28:rush']);
+});

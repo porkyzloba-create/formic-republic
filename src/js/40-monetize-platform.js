@@ -14,6 +14,8 @@ const IAP = {
   amber5: {name:'Treasury of Amber', amber:7000, bonus:2000, price:'$49.99', tag:'Best value'},
   starter:{name:'Comrade Starter Kit', price:'$1.99', once:true, icon:'gift',
            desc:'300 amber, a Politburo Pack, 3 Sugar Rush and an Hourglass of Labour. Once per account.'},
+  autotap:{name:'Eternal Auto-Tapper', price:'$2.99', once:true, icon:'ant',
+           desc:'A mechanical mandible taps the hill 8 times a second, forever, keeping fervor high. Switch it on or off any time.'},
   party:  {name:'Party Membership Card', price:'$3.99', once:true, icon:'star',
            desc:'Claim every broadcast reward instantly with no ad, plus +25% offline gathering. Forever.'},
   pass:   {name:'Revolution Pass Premium', price:'$4.99', icon:'ticket',
@@ -156,6 +158,7 @@ function grantIAP(sku){
   if (sku === 'starter'){ S.iap.owned.starter = true; addGems(300); S.packs.epic = (S.packs.epic||0) + 1;
     S.inv.rush = (S.inv.rush||0) + 3; S.inv.hourglass = (S.inv.hourglass||0) + 1; return '300 amber, a Politburo Pack and 4 usables.'; }
   if (sku === 'party'){ S.iap.owned.party = true; return 'Broadcast rewards are now instant, and offline gathering is up 25%.'; }
+  if (sku === 'autotap'){ S.iap.owned.autotap = true; S.auto.forever = true; S.auto.on = true; return 'The Eternal Auto-Tapper is working. Switch it off in the Shop whenever you like.'; }
   if (sku === 'pass'){ unlockPremium(); return 'Premium unlocked: +50% merit, +10% output and a free Politburo Pack. Claim your rewards in the Pass.'; }
 }
 // One-time Starter Kit offer, shown right after the player's first Nuptial Flight
@@ -171,6 +174,7 @@ async function restorePurchases(){
   const r = await Monetize.restore(); let n = 0;
   for (const sku of (r.owned || [])){
     if (sku === 'party' && !S.iap.owned.party){ S.iap.owned.party = true; n++; }
+    if (sku === 'autotap' && !S.iap.owned.autotap){ S.iap.owned.autotap = true; S.auto.forever = true; n++; }
     if (sku === 'starter' && !S.iap.owned.starter){ S.iap.owned.starter = true; n++; }
   }
   toast(n ? 'Purchases restored' : 'Nothing to restore', n ? `${n} purchase${n>1?'s':''} restored to this colony.` : 'No one-time purchases were found for this account.', n ? 'gold' : 'neutral', 'gift');

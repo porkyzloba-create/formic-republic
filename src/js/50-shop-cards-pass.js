@@ -227,6 +227,7 @@ function useItem(id){
   else if (id==='hourglass'){ if (D.baseCps <= 0){ ok = false; msg = 'Hire some castes first: the hourglass collects their output.'; } else { const v = D.baseCps*3600; gain(v); bump(); msg = `+${fmt(v)} crumbs: one hour of labour, instantly.`; } }
   else if (id==='basket'){ if (colony.hasCube()){ ok = false; msg = 'A sugar cube is already on the hill. Grab it first!'; } else colony.spawnCube(); }
   else if (id==='flare'){ if (colony.hasFlyer()){ ok = false; msg = 'A royal is already in the sky. Catch it!'; } else colony.spawnFlyer(); }
+  else if (id==='autotap'){ S.auto.until = Math.max(Date.now(), S.auto.until) + 3600e3; msg = `The hill is tapped 8 times a second for ${fmtTime((S.auto.until - Date.now())/1000)}.`; }
   else if (id==='whistle'){
     const ks = Object.keys(S.exp).filter(k => Date.now() < S.exp[k].end);
     if (!ks.length){ ok = false; msg = 'No squads are out raiding right now.'; }
@@ -296,7 +297,7 @@ function flipCard(el){
 }
 
 
-function doTap(){
+function doTap(auto){
   lastCrit = D.tapValue > 0 && Math.random() < critChance();
   const v = D.tapValue * fervMult() * (lastCrit ? CRIT_MULT : 1);
   gain(v); S.taps++;
@@ -304,7 +305,7 @@ function doTap(){
   if (fervor >= 1) S.flags.fervor = true;
   track('taps', 1);
   if (++S.tapMerit >= 10){ S.tapMerit = 0; merit(1); }
-  Sound.tap(); buzz(6);
+  if (!auto){ Sound.tap(); buzz(6); }   // the auto-tapper works quietly
   return v;
 }
 function buyProducer(id, n){

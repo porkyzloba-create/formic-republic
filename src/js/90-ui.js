@@ -201,6 +201,9 @@ function render(){
     if (!S.iap.owned.starter && sold('starter')) html += `<div class="offer"><div class="of-ic">${icon('gift')}</div><div class="row-main"><div class="of-tag">One-time offer</div><div class="row-name">${IAP.starter.name}</div><div class="row-sub">${IAP.starter.desc}</div></div><button class="gbtn cash" data-iap="starter">${IAP.starter.price}</button></div>`;
     html += `<div class="amber5">${['amber1','amber2','amber3','amber4','amber5'].filter(sold).map((k,i) => { const it = IAP[k], first = !S.iap.first[k];
       return `<div class="atile${it.tag ? ' hot' : ''}">${it.tag ? `<span class="atag">${it.tag}</span>` : ''}<span class="agem" style="font-size:${18+i*3}px">${icon('gem')}</span><div class="an">${fmt(it.amber)}</div><div class="ab">${it.bonus ? '+' + fmt(it.bonus) + ' bonus' : '&nbsp;'}</div>${first ? '<div class="dbl">\u00d72 first buy</div>' : '<div class="dbl off">&nbsp;</div>'}<button class="gbtn cash" data-iap="${k}">${it.price}</button></div>`; }).join('')}</div>`;
+    if (sold('autotap')) html += S.iap.owned.autotap
+      ? `<div class="srow"><div class="si" style="color:var(--crumb-deep)">${icon('ant')}</div><div class="row-main"><div class="row-name">${IAP.autotap.name}</div><div class="row-sub">Owned. ${S.auto.on ? 'Tapping 8 times a second.' : 'Switched off.'}</div></div><button class="gbtn ${S.auto.on ? 'free' : ''}" data-autotoggle>${S.auto.on ? 'ON' : 'OFF'}</button></div>`
+      : `<div class="srow"><div class="si" style="color:var(--crumb-deep)">${icon('ant')}</div><div class="row-main"><div class="row-name">${IAP.autotap.name}</div><div class="row-sub">${IAP.autotap.desc}</div></div><button class="gbtn cash" data-iap="autotap">${IAP.autotap.price}</button></div>`;
     if (sold('party')) html += `<div class="srow"><div class="si" style="color:var(--banner)">${icon('star')}</div><div class="row-main"><div class="row-name">${IAP.party.name}</div><div class="row-sub">${IAP.party.desc}</div></div><button class="gbtn cash" data-iap="party" ${party ? 'disabled' : ''}>${party ? 'OWNED' : IAP.party.price}</button></div>`;
     if (!S.pass.premium && sold('pass')) html += `<div class="srow"><div class="si" style="color:var(--gem)">${icon('ticket')}</div><div class="row-main"><div class="row-name">${IAP.pass.name}</div><div class="row-sub">${IAP.pass.desc}</div></div><button class="gbtn cash" data-iap="pass">${IAP.pass.price}</button></div>`;
     html += `<div class="shop-sec">Free rewards</div>`;
@@ -385,7 +388,8 @@ function refresh(){
       : `<button class="belt-empty" data-goto="shop">${icon('bag')} Your usables appear here · visit the Shop</button>`;
   }
 
-  $('buffs').innerHTML = D.buffs.filter(b => b.until > now).map(b => {
+  const autoChip = autoTapActive(now) ? `<span class="buff gold">${icon('ant')}AUTO <em>${AUTO_RATE}/s${S.auto.forever && S.auto.on ? '' : ' · ' + fmtTime((S.auto.until - now)/1000)}</em></span>` : '';
+  $('buffs').innerHTML = autoChip + D.buffs.filter(b => b.until > now).map(b => {
     const bad = b.prod < 1 || b.tap < 1;
     const fx = [b.prod !== 1 ? `output ×${+b.prod.toFixed(2)}` : '', b.tap !== 1 ? `taps ×${b.tap}` : ''].filter(Boolean).join(' ');
     const left = (b.until-now)/1000, p = b.dur ? Math.max(0, Math.min(1, left/b.dur)) : 1;
@@ -545,6 +549,7 @@ function checkMedals(){
 }
 
 function onPanelClick(e){
+  if (e.target.closest('[data-autotoggle]')){ S.auto.on = !S.auto.on; toast('Eternal Auto-Tapper', S.auto.on ? 'Switched on: 8 taps a second.' : 'Switched off.', S.auto.on ? 'gold' : 'neutral', 'ant'); afterChange(); render(); return; }
   if (e.target.closest('[data-spin]')){ Fun.openSpin(); return; }
   const shb = e.target.closest('[data-share]'); if (shb){ shareColony(shb.dataset.share); return; }
   const onb = e.target.closest('[data-on]');

@@ -10,7 +10,7 @@ function fresh(){
     dir:{day:'', list:[], chest:false, swapped:false, week:'', days:[], weekClaimed:false},
     abyss:{depth:0, torches:5, day:'', extra:0, shards:0, ppity:0, wins:0},
     flags:{seasons:{}}, iap:{owned:{}, first:{}}, ads:{day:'', n:{}, ex:0}, sound:true, started:Date.now(), last:Date.now(),
-    online:freshOnline(), spin:{day:'', used:0, ads:0, total:0, jackpots:0}};
+    online:freshOnline(), spin:{day:'', used:0, ads:0, total:0, jackpots:0}, auto:{until:0, forever:false, on:true}};
 }
 // Online league: this week's score is kept locally and reported to the server; acct holds one
 // identity per backend ('supabase' for the real game, 'preview' for the claude.ai preview league).
@@ -89,7 +89,7 @@ function availableUpgrades(s){ return UPGRADES.filter(u => !s.bought.includes(u.
 function nextLockedUpgrade(s){ return UPGRADES.filter(u => !s.bought.includes(u.id) && !u.unlocked(s)).sort((a,b) => a.cost-b.cost)[0]; }
 
 const PERMA = ['abyss','dir','medals','seenMedals','lifetime','taps','picnics','anteaters','flyers','rubbles','incidents','raids','daily','quotaN','flags','sound','started',
-  'gems','inv','packs','cards','shards','pass','pity','shopDay','tapMerit','crowns','crownsTotal','supers','doctrine','war','hard','online','spin'];
+  'gems','inv','packs','cards','shards','pass','pity','shopDay','tapMerit','crowns','crownsTotal','supers','doctrine','war','hard','online','spin','auto'];
 function resetRun(s, extra){ const k = {}; for (const f of PERMA) k[f] = s[f]; Object.assign(s, fresh(), k, extra); }
 function nuptialFlight(s, force){
   const g = pherGain(s); if (g < 1 && !force) return 0;

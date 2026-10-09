@@ -15,6 +15,15 @@ const CRIT_MULT = 7, CRIT_BASE = .03, CRIT_FERVOR = .06;
 let lastCrit = false;
 function critChance(){ return fervor > .98 ? CRIT_FERVOR : CRIT_BASE; }   // max fervor doubles the odds
 
+/* ---------- the auto-tapper ----------
+   Bought by the hour with amber (a usable) or forever with real money (IAP 'autotap',
+   switchable). Taps 8 times a second like a real finger: fervor, crits, merit, and it
+   fights Abyss guardians. Off during the "Hands Off the Hill" hardship. */
+const AUTO_RATE = 8;
+let autoAcc = 0;
+function autoTapActive(now){ const a = S.auto; return S.chal !== 'pacifist' && ((a.forever && a.on) || a.until > (now || Date.now())); }
+function autoTapRate(now){ return autoTapActive(now) ? AUTO_RATE : 0; }
+
 /* ---------- the Queen's Lottery (daily wheel) ---------- */
 const SPIN_ADS = 2;   // extra spins per day for watching a broadcast
 // Wheel order alternates big and small prizes so the pointer always passes something exciting.

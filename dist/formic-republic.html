@@ -1474,14 +1474,17 @@ const USABLES = {
   basket:   {name:'Picnic Basket',       icon:'crumb',  price:10, desc:'Drop a picnic sugar cube on the hill right now.'},
   flare:    {name:'Royal Flare',         icon:'star',   price:25, desc:'Lure a winged royal over the hill right now.'},
   whistle:  {name:'Raid Whistle',        icon:'map',    price:40, desc:'Every squad out raiding returns instantly.'},
+  autotap:  {name:'Auto-Tapper',         icon:'ant',    price:60, desc:'A mechanical mandible taps the hill 8 times a second for 1 hour. Stacks.'},
 };
 const USE_ORDER = Object.keys(USABLES);
+// The pass rewards cycle through this fixed list, so adding a usable never reshuffles the pass.
+const PASS_USES = ['rush','oil','tonic','hourglass','basket','flare','whistle'];
 const PASS_TIERS = 30, PREMIUM_COST = 500, BONUS_XP = 2000;
 const RAID_GEMS = {kitchen:1, park:3, bakery:6, factory:15, moon:40};
 function tierNeed(t){ return 400 + t*80; }
 function passTier(xp){ let t = 0; while (t < PASS_TIERS && xp >= tierNeed(t)){ xp -= tierNeed(t); t++; } return {tier:t, into:xp, need: t < PASS_TIERS ? tierNeed(t) : BONUS_XP}; }
 function passReward(t, prem){
-  const U = USE_ORDER;
+  const U = PASS_USES;
   if (!prem){
     if (t === PASS_TIERS) return {t:'card', id:'l1'};
     if (t % 10 === 0) return {t:'pack', id:'epic'};
@@ -1622,7 +1625,7 @@ function fresh(){
     dir:{day:'', list:[], chest:false, swapped:false, week:'', days:[], weekClaimed:false},
     abyss:{depth:0, torches:5, day:'', extra:0, shards:0, ppity:0, wins:0},
     flags:{seasons:{}}, iap:{owned:{}, first:{}}, ads:{day:'', n:{}, ex:0}, sound:true, started:Date.now(), last:Date.now(),
-    online:freshOnline(), spin:{day:'', used:0, ads:0, total:0, jackpots:0}};
+    online:freshOnline(), spin:{day:'', used:0, ads:0, total:0, jackpots:0}, auto:{until:0, forever:false, on:true}};
 }
 // Online league: this week's score is kept locally and reported to the server; acct holds one
 // identity per backend ('supabase' for the real game, 'preview' for the claude.ai preview league).
@@ -1701,7 +1704,7 @@ function availableUpgrades(s){ return UPGRADES.filter(u => !s.bought.includes(u.
 function nextLockedUpgrade(s){ return UPGRADES.filter(u => !s.bought.includes(u.id) && !u.unlocked(s)).sort((a,b) => a.cost-b.cost)[0]; }
 
 const PERMA = ['abyss','dir','medals','seenMedals','lifetime','taps','picnics','anteaters','flyers','rubbles','incidents','raids','daily','quotaN','flags','sound','started',
-  'gems','inv','packs','cards','shards','pass','pity','shopDay','tapMerit','crowns','crownsTotal','supers','doctrine','war','hard','online','spin'];
+  'gems','inv','packs','cards','shards','pass','pity','shopDay','tapMerit','crowns','crownsTotal','supers','doctrine','war','hard','online','spin','auto'];
 function resetRun(s, extra){ const k = {}; for (const f of PERMA) k[f] = s[f]; Object.assign(s, fresh(), k, extra); }
 function nuptialFlight(s, force){
   const g = pherGain(s); if (g < 1 && !force) return 0;
@@ -1751,6 +1754,7 @@ function normalize(o){
   s.online = Object.assign(freshOnline(), s.online||{}); s.online.acct = s.online.acct || {};
   s.online.chest = Object.assign({week:'', got:[]}, s.online.chest||{});
   s.spin = Object.assign({day:'', used:0, ads:0, total:0, jackpots:0}, s.spin||{});
+  s.auto = Object.assign({until:0, forever:false, on:true}, s.auto||{});
   if (o.ascLife === undefined) s.ascLife = s.lifetime;
   return s;
 }
@@ -1819,6 +1823,8 @@ const IAP = {
   amber5: {name:'Treasury of Amber', amber:7000, bonus:2000, price:'$49.99', tag:'Best value'},
   starter:{name:'Comrade Starter Kit', price:'$1.99', once:true, icon:'gift',
            desc:'300 amber, a Politburo Pack, 3 Sugar Rush and an Hourglass of Labour. Once per account.'},
+  autotap:{name:'Eternal Auto-Tapper', price:'$2.99', once:true, icon:'ant',
+           desc:'A mechanical mandible taps the hill 8 times a second, forever, keeping fervor high. Switch it on or off any time.'},
   party:  {name:'Party Membership Card', price:'$3.99', once:true, icon:'star',
            desc:'Claim every broadcast reward instantly with no ad, plus +25% offline gathering. Forever.'},
   pass:   {name:'Revolution Pass Premium', price:'$4.99', icon:'ticket',
@@ -1961,6 +1967,7 @@ function grantIAP(sku){
   if (sku === 'starter'){ S.iap.owned.starter = true; addGems(300); S.packs.epic = (S.packs.epic||0) + 1;
     S.inv.rush = (S.inv.rush||0) + 3; S.inv.hourglass = (S.inv.hourglass||0) + 1; return '300 amber, a Politburo Pack and 4 usables.'; }
   if (sku === 'party'){ S.iap.owned.party = true; return 'Broadcast rewards are now instant, and offline gathering is up 25%.'; }
+  if (sku === 'autotap'){ S.iap.owned.autotap = true; S.auto.forever = true; S.auto.on = true; return 'The Eternal Auto-Tapper is working. Switch it off in the Shop whenever you like.'; }
   if (sku === 'pass'){ unlockPremium(); return 'Premium unlocked: +50% merit, +10% output and a free Politburo Pack. Claim your rewards in the Pass.'; }
 }
 // One-time Starter Kit offer, shown right after the player's first Nuptial Flight
@@ -1976,6 +1983,7 @@ async function restorePurchases(){
   const r = await Monetize.restore(); let n = 0;
   for (const sku of (r.owned || [])){
     if (sku === 'party' && !S.iap.owned.party){ S.iap.owned.party = true; n++; }
+    if (sku === 'autotap' && !S.iap.owned.autotap){ S.iap.owned.autotap = true; S.auto.forever = true; n++; }
     if (sku === 'starter' && !S.iap.owned.starter){ S.iap.owned.starter = true; n++; }
   }
   toast(n ? 'Purchases restored' : 'Nothing to restore', n ? `${n} purchase${n>1?'s':''} restored to this colony.` : 'No one-time purchases were found for this account.', n ? 'gold' : 'neutral', 'gift');
@@ -2234,6 +2242,7 @@ function useItem(id){
   else if (id==='hourglass'){ if (D.baseCps <= 0){ ok = false; msg = 'Hire some castes first: the hourglass collects their output.'; } else { const v = D.baseCps*3600; gain(v); bump(); msg = `+${fmt(v)} crumbs: one hour of labour, instantly.`; } }
   else if (id==='basket'){ if (colony.hasCube()){ ok = false; msg = 'A sugar cube is already on the hill. Grab it first!'; } else colony.spawnCube(); }
   else if (id==='flare'){ if (colony.hasFlyer()){ ok = false; msg = 'A royal is already in the sky. Catch it!'; } else colony.spawnFlyer(); }
+  else if (id==='autotap'){ S.auto.until = Math.max(Date.now(), S.auto.until) + 3600e3; msg = `The hill is tapped 8 times a second for ${fmtTime((S.auto.until - Date.now())/1000)}.`; }
   else if (id==='whistle'){
     const ks = Object.keys(S.exp).filter(k => Date.now() < S.exp[k].end);
     if (!ks.length){ ok = false; msg = 'No squads are out raiding right now.'; }
@@ -2303,7 +2312,7 @@ function flipCard(el){
 }
 
 
-function doTap(){
+function doTap(auto){
   lastCrit = D.tapValue > 0 && Math.random() < critChance();
   const v = D.tapValue * fervMult() * (lastCrit ? CRIT_MULT : 1);
   gain(v); S.taps++;
@@ -2311,7 +2320,7 @@ function doTap(){
   if (fervor >= 1) S.flags.fervor = true;
   track('taps', 1);
   if (++S.tapMerit >= 10){ S.tapMerit = 0; merit(1); }
-  Sound.tap(); buzz(6);
+  if (!auto){ Sound.tap(); buzz(6); }   // the auto-tapper works quietly
   return v;
 }
 function buyProducer(id, n){
@@ -3076,6 +3085,15 @@ const CRIT_MULT = 7, CRIT_BASE = .03, CRIT_FERVOR = .06;
 let lastCrit = false;
 function critChance(){ return fervor > .98 ? CRIT_FERVOR : CRIT_BASE; }   // max fervor doubles the odds
 
+/* ---------- the auto-tapper ----------
+   Bought by the hour with amber (a usable) or forever with real money (IAP 'autotap',
+   switchable). Taps 8 times a second like a real finger: fervor, crits, merit, and it
+   fights Abyss guardians. Off during the "Hands Off the Hill" hardship. */
+const AUTO_RATE = 8;
+let autoAcc = 0;
+function autoTapActive(now){ const a = S.auto; return S.chal !== 'pacifist' && ((a.forever && a.on) || a.until > (now || Date.now())); }
+function autoTapRate(now){ return autoTapActive(now) ? AUTO_RATE : 0; }
+
 /* ---------- the Queen's Lottery (daily wheel) ---------- */
 const SPIN_ADS = 2;   // extra spins per day for watching a broadcast
 // Wheel order alternates big and small prizes so the pointer always passes something exciting.
@@ -3727,6 +3745,9 @@ function render(){
     if (!S.iap.owned.starter && sold('starter')) html += `<div class="offer"><div class="of-ic">${icon('gift')}</div><div class="row-main"><div class="of-tag">One-time offer</div><div class="row-name">${IAP.starter.name}</div><div class="row-sub">${IAP.starter.desc}</div></div><button class="gbtn cash" data-iap="starter">${IAP.starter.price}</button></div>`;
     html += `<div class="amber5">${['amber1','amber2','amber3','amber4','amber5'].filter(sold).map((k,i) => { const it = IAP[k], first = !S.iap.first[k];
       return `<div class="atile${it.tag ? ' hot' : ''}">${it.tag ? `<span class="atag">${it.tag}</span>` : ''}<span class="agem" style="font-size:${18+i*3}px">${icon('gem')}</span><div class="an">${fmt(it.amber)}</div><div class="ab">${it.bonus ? '+' + fmt(it.bonus) + ' bonus' : '&nbsp;'}</div>${first ? '<div class="dbl">\u00d72 first buy</div>' : '<div class="dbl off">&nbsp;</div>'}<button class="gbtn cash" data-iap="${k}">${it.price}</button></div>`; }).join('')}</div>`;
+    if (sold('autotap')) html += S.iap.owned.autotap
+      ? `<div class="srow"><div class="si" style="color:var(--crumb-deep)">${icon('ant')}</div><div class="row-main"><div class="row-name">${IAP.autotap.name}</div><div class="row-sub">Owned. ${S.auto.on ? 'Tapping 8 times a second.' : 'Switched off.'}</div></div><button class="gbtn ${S.auto.on ? 'free' : ''}" data-autotoggle>${S.auto.on ? 'ON' : 'OFF'}</button></div>`
+      : `<div class="srow"><div class="si" style="color:var(--crumb-deep)">${icon('ant')}</div><div class="row-main"><div class="row-name">${IAP.autotap.name}</div><div class="row-sub">${IAP.autotap.desc}</div></div><button class="gbtn cash" data-iap="autotap">${IAP.autotap.price}</button></div>`;
     if (sold('party')) html += `<div class="srow"><div class="si" style="color:var(--banner)">${icon('star')}</div><div class="row-main"><div class="row-name">${IAP.party.name}</div><div class="row-sub">${IAP.party.desc}</div></div><button class="gbtn cash" data-iap="party" ${party ? 'disabled' : ''}>${party ? 'OWNED' : IAP.party.price}</button></div>`;
     if (!S.pass.premium && sold('pass')) html += `<div class="srow"><div class="si" style="color:var(--gem)">${icon('ticket')}</div><div class="row-main"><div class="row-name">${IAP.pass.name}</div><div class="row-sub">${IAP.pass.desc}</div></div><button class="gbtn cash" data-iap="pass">${IAP.pass.price}</button></div>`;
     html += `<div class="shop-sec">Free rewards</div>`;
@@ -3911,7 +3932,8 @@ function refresh(){
       : `<button class="belt-empty" data-goto="shop">${icon('bag')} Your usables appear here · visit the Shop</button>`;
   }
 
-  $('buffs').innerHTML = D.buffs.filter(b => b.until > now).map(b => {
+  const autoChip = autoTapActive(now) ? `<span class="buff gold">${icon('ant')}AUTO <em>${AUTO_RATE}/s${S.auto.forever && S.auto.on ? '' : ' · ' + fmtTime((S.auto.until - now)/1000)}</em></span>` : '';
+  $('buffs').innerHTML = autoChip + D.buffs.filter(b => b.until > now).map(b => {
     const bad = b.prod < 1 || b.tap < 1;
     const fx = [b.prod !== 1 ? `output ×${+b.prod.toFixed(2)}` : '', b.tap !== 1 ? `taps ×${b.tap}` : ''].filter(Boolean).join(' ');
     const left = (b.until-now)/1000, p = b.dur ? Math.max(0, Math.min(1, left/b.dur)) : 1;
@@ -4071,6 +4093,7 @@ function checkMedals(){
 }
 
 function onPanelClick(e){
+  if (e.target.closest('[data-autotoggle]')){ S.auto.on = !S.auto.on; toast('Eternal Auto-Tapper', S.auto.on ? 'Switched on: 8 taps a second.' : 'Switched off.', S.auto.on ? 'gold' : 'neutral', 'ant'); afterChange(); render(); return; }
   if (e.target.closest('[data-spin]')){ Fun.openSpin(); return; }
   const shb = e.target.closest('[data-share]'); if (shb){ shareColony(shb.dataset.share); return; }
   const onb = e.target.closest('[data-on]');
@@ -4616,6 +4639,14 @@ const colony = (() => {
     burst(x, y, reduce ? 3 : 7);
     if (floats.length > 30) floats.shift();
   }
+  // auto-tapper: small floats around the mound, crits in big red
+  function autoTap(v, crit){
+    const g = geo(), x = W*.5 + (Math.random()-.5)*W*.5, y = g.surf + (Math.random()-.1)*H*.3;
+    queenPulse = Math.max(queenPulse, .6);
+    if (crit){ floats.push({x: clampX(x), y, text:'CRIT! +' + fmt(v, true), life:1.2, big:true, color:'#E5392D'}); burst(x, y, reduce ? 4 : 14, '#E5392D'); }
+    else if (Math.random() < .35){ floats.push({x, y, text:'+' + fmt(v, true), life:.7}); burst(x, y, reduce ? 0 : 3); }
+    if (floats.length > 30) floats.shift();
+  }
   function droneTap(v){
     const g = geo(); queenPulse = Math.max(queenPulse, .5);
     if (Math.random() < .5) floats.push({x: g.queen[0] + (Math.random()-.5)*40, y: g.queen[1]-16, text:'+' + fmt(v, true), life:.8, color:COL.jelly});
@@ -4639,7 +4670,7 @@ const colony = (() => {
   function hasFlyer(){ return !!flyer; }
 
   new ResizeObserver(resize).observe(stage);
-  return {frame, rebuild, tapAt, reset, resize, droneTap, spawnAnteater, spawnFlyer, spawnRubble, busy, spawnCube, hasCube, hasFlyer, spawnGuardian, guardianActive: () => !!guard, hitGuardian: v => hitGuardian(v)};
+  return {frame, rebuild, tapAt, reset, resize, droneTap, autoTap, spawnAnteater, spawnFlyer, spawnRubble, busy, spawnCube, hasCube, hasFlyer, spawnGuardian, guardianActive: () => !!guard, hitGuardian: v => hitGuardian(v)};
 })();
 
 /* ============================================================
@@ -4668,6 +4699,14 @@ function loop(t){
 
   if (t - lastTapAt > 600) fervor = Math.max(0, fervor - dt * .35 * D.ferDecay);
   if (t < fervorLockUntil) fervor = 1;
+  const ar = autoTapRate(now);
+  if (ar){
+    autoAcc += ar * dt;
+    while (autoAcc >= 1){ autoAcc--;
+      if (colony.guardianActive()) colony.hitGuardian(hooks.guardianHit());
+      else { const v = doTap(true); colony.autoTap(v, lastCrit); }
+    }
+  } else autoAcc = 0;
   if (D.drones){
     droneAcc += D.drones * dt;
     while (droneAcc >= 1){ droneAcc--; const v = D.tapValue; if (colony.guardianActive()) colony.hitGuardian(v * D.abyssMult); else { gain(v); colony.droneTap(v); } }

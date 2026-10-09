@@ -180,14 +180,17 @@ const USABLES = {
   basket:   {name:'Picnic Basket',       icon:'crumb',  price:10, desc:'Drop a picnic sugar cube on the hill right now.'},
   flare:    {name:'Royal Flare',         icon:'star',   price:25, desc:'Lure a winged royal over the hill right now.'},
   whistle:  {name:'Raid Whistle',        icon:'map',    price:40, desc:'Every squad out raiding returns instantly.'},
+  autotap:  {name:'Auto-Tapper',         icon:'ant',    price:60, desc:'A mechanical mandible taps the hill 8 times a second for 1 hour. Stacks.'},
 };
 const USE_ORDER = Object.keys(USABLES);
+// The pass rewards cycle through this fixed list, so adding a usable never reshuffles the pass.
+const PASS_USES = ['rush','oil','tonic','hourglass','basket','flare','whistle'];
 const PASS_TIERS = 30, PREMIUM_COST = 500, BONUS_XP = 2000;
 const RAID_GEMS = {kitchen:1, park:3, bakery:6, factory:15, moon:40};
 function tierNeed(t){ return 400 + t*80; }
 function passTier(xp){ let t = 0; while (t < PASS_TIERS && xp >= tierNeed(t)){ xp -= tierNeed(t); t++; } return {tier:t, into:xp, need: t < PASS_TIERS ? tierNeed(t) : BONUS_XP}; }
 function passReward(t, prem){
-  const U = USE_ORDER;
+  const U = PASS_USES;
   if (!prem){
     if (t === PASS_TIERS) return {t:'card', id:'l1'};
     if (t % 10 === 0) return {t:'pack', id:'epic'};
