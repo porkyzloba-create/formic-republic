@@ -66,9 +66,25 @@ window.FR_receive = msg => {
 if (typeof window.FR_onMessage === 'function') window.FR_onMessage(window.FR_receive);
 function openExternal(url){ if (!url) return; if (hasNative) Native.post('open', {url}); else window.open(url, '_blank', 'noopener'); }
 function privacyLinks(){
-  const a = PLATFORM.privacyUrl ? `<button class="linkbtn" data-ext="privacy">Privacy policy</button>` : '';
+  const a = `<button class="linkbtn" data-policy>Privacy policy</button>`;
   const b = PLATFORM.adChoices ? `<button class="linkbtn" data-adchoices>Ad privacy choices</button>` : '';
-  return a || b ? `<div class="privacy-links">${a}${b}</div>` : '';
+  return `<div class="privacy-links">${a}${b}</div>`;
+}
+// The policy text is built from src/privacy.md into PRIVACY_POLICY (see build.mjs), so it
+// reads the same offline, in every shell, as the hosted page at PLATFORM.privacyUrl.
+function showPolicy(){
+  $('pol-text').innerHTML = typeof PRIVACY_POLICY === 'string' ? PRIVACY_POLICY : '';
+  $('pol-web').hidden = !PLATFORM.privacyUrl;
+  $('policyov').hidden = false; $('pol-text').scrollTop = 0; $('pol-close').focus();
+}
+function privacyPanelHTML(){
+  const on = Analytics.available(), st = S.privacy.stats !== false;
+  return `<div class="sec-h"><h3 class="ink">Privacy</h3></div>
+    <div class="srow priv-row"><div class="row-main"><div class="row-name">Share anonymous play statistics</div>
+      <div class="row-sub">${on ? 'Events such as finishing the tutorial or opening a pack, with a random install ID. No name, email, ad ID or location.' : 'Off in the browser preview: nothing is sent.'}</div>
+      ${on ? `<div class="row-sub priv-id">Install ID: <code>${esc(st ? Analytics.id() : (S.flags.aid || 'none yet'))}</code></div>` : ''}</div>
+      <button class="tgl" role="switch" data-stats aria-checked="${on && st}" ${on ? '' : 'disabled'} aria-label="Share anonymous play statistics"><i></i></button></div>
+    ${privacyLinks()}`;
 }
 // Preview tools: only in the browser build (never in the Google Play or Steam builds),
 // so features gated behind days of play can be checked straight away.

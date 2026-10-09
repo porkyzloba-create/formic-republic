@@ -178,20 +178,23 @@ async function shareColony(where){
 
 /* ---------- anonymous analytics (PostHog, EU) ----------
    On in the store builds; off in the browser preview unless FR_PLATFORM.analytics is true.
-   Sends a random install id (no names, no emails); the PostHog project anonymises IPs.
-   Mention it in the store privacy policy. */
+   Sends a random install id (no names, no emails); the PostHog project discards IPs and
+   each event asks PostHog to skip the GeoIP lookup. The player can switch it off
+   (S.privacy.stats, Flight tab > Privacy). Described in src/privacy.md: keep them in step. */
 const Analytics = {
   host:'https://eu.i.posthog.com', key:'phc_teWpivyJJZ48jraYrC7wwgnNFrxbUxALeCLgdoqdkwVY',
   q:[], last:0,
-  on(){ return PLATFORM.analytics === true || (PLATFORM.id !== 'web' && PLATFORM.analytics !== false); },
+  available(){ return PLATFORM.analytics === true || (PLATFORM.id !== 'web' && PLATFORM.analytics !== false); },
+  on(){ return this.available() && !(S && S.privacy && S.privacy.stats === false); },
+  setStats(v){ S.privacy.stats = !!v; if (!v) this.q = []; },
   id(){ if (!S.flags.aid) S.flags.aid = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : 'a' + Date.now().toString(36) + Math.random().toString(36).slice(2); return S.flags.aid; },
   ev(name, props){
     if (!S || !this.on()) return;
-    this.q.push({event:name, timestamp:new Date().toISOString(), properties:Object.assign({distinct_id:this.id(), platform:PLATFORM.id, flights:S.flights, supers:S.supers, lifetime_log10: Math.floor(Math.log10(1 + S.lifetime))}, props || {})});
+    this.q.push({event:name, timestamp:new Date().toISOString(), properties:Object.assign({distinct_id:this.id(), $geoip_disable:true, platform:PLATFORM.id, flights:S.flights, supers:S.supers, lifetime_log10: Math.floor(Math.log10(1 + S.lifetime))}, props || {})});
     if (this.q.length >= 25) this.flush();
   },
   flush(){
-    if (!this.q.length) return; const batch = this.q.splice(0); this.last = Date.now();
+    if (!this.q.length) return; if (!this.on()){ this.q = []; return; } const batch = this.q.splice(0); this.last = Date.now();
     try { fetch(this.host + '/batch/', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({api_key:this.key, batch}), keepalive:true}).catch(() => {}); } catch(e){}
   },
 };

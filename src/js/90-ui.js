@@ -280,7 +280,7 @@ function render(){
       </dl>
       <button class="gbtn big share-btn" data-share="record">${icon('up')} Share my colony</button>
       <button class="btn ghost" id="f-wipe"></button>
-      ${privacyLinks()}
+      ${privacyPanelHTML()}
     </div>`;
   }
   refresh();
@@ -611,7 +611,9 @@ function onPanelClick(e){
   if (e.target.closest('[data-descend]')){ startGuardian(); return; }
   const tb = e.target.closest('[data-torch]'); if (tb){ buyTorch(tb.dataset.torch); return; }
   if (e.target.closest('[data-primpack]')){ buyPrimPack(); return; }
-  if (e.target.closest('[data-ext="privacy"]')){ openExternal(PLATFORM.privacyUrl); return; }
+  if (e.target.closest('[data-policy]')){ showPolicy(); return; }
+  if (e.target.closest('[data-stats]')){ const t = e.target.closest('[data-stats]'); if (t.disabled) return; Analytics.setStats(S.privacy.stats === false); save(); render();
+    toast('Play statistics', S.privacy.stats ? 'Switched on. Thank you, comrade.' : 'Switched off. Nothing more will be sent.', 'neutral', 'scroll'); return; }
   if (e.target.closest('[data-adchoices]')){ Native.post('adchoices', {}); return; }
   const dcb = e.target.closest('[data-dclaim]'); if (dcb){ claimDirective(+dcb.dataset.dclaim); afterChange(); return; }
   const dsw = e.target.closest('[data-dswap]'); if (dsw){ swapDirective(+dsw.dataset.dswap); return; }

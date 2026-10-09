@@ -26,6 +26,7 @@ function mockServer(){
       case 'fr_my_alliance': return mine(me(a));
       case 'fr_create_alliance': { const p = me(a), id = 'a' + (++n); alliances[id] = { id, name: a.p_name, code: 'ABC234', owner: p.id }; p.alliance = id; return mine(p); }
       case 'fr_leave_alliance': { me(a).alliance = null; return { alliance: null }; }
+      case 'fr_delete_player': { const p = me(a); if (!p) throw new Error('bad_player'); delete players[p.id]; delete scores[p.id]; return { deleted: true }; }
     }
     return {};
   };
@@ -159,6 +160,23 @@ try {
     if (!(await ev(() => S.auto.forever && autoTapActive()))) throw new Error('Eternal Auto-Tapper not granted');
     await page.click('[data-autotoggle]');
     if (await ev(() => autoTapActive())) throw new Error('could not switch it off');
+  });
+  await step('privacy: policy reader, statistics switch, delete the league entry', async () => {
+    await page.click('#flightbtn'); await page.waitForTimeout(200);
+    if (await page.locator('[data-stats]').isEnabled()) throw new Error('statistics switch should be disabled in the browser preview');
+    await ev(() => { PLATFORM.id = 'android'; render(); });
+    if (!(await ev(() => Analytics.on()))) throw new Error('statistics should default to on in store builds');
+    await page.click('[data-stats]');
+    if (await ev(() => Analytics.on() || S.privacy.stats)) throw new Error('statistics switch did not turn them off');
+    await page.click('[data-stats]'); await ev(() => { PLATFORM.id = 'web'; render(); });
+    await page.click('#list [data-policy]'); await page.waitForTimeout(150);
+    if (!(await ev(() => /Privacy Policy/.test(document.getElementById('pol-text').textContent) && /Delete my league entry/.test(document.getElementById('pol-text').textContent)))) throw new Error('policy text missing');
+    await page.click('#pol-close'); if (await page.locator('#policyov').isVisible()) throw new Error('policy did not close');
+    await page.click('#nav [data-group="world"]'); await page.click('[data-gt="ranks"]'); await page.waitForTimeout(300);
+    await page.click('[data-on="delete"]'); await page.click('[data-on="delete"]'); await page.waitForTimeout(500);
+    if (await ev(() => !!S.online.acct.supabase)) throw new Error('league entry not deleted');
+    if (!(await page.locator('#on-name').count())) throw new Error('join form not shown after deleting');
+    await page.fill('#on-name', 'Smoke Hill'); await page.click('[data-on="register"]'); await page.waitForTimeout(600);   // back in, for the reload check
   });
   await step('save survives a reload', async () => {
     const before = await ev(() => { save(true); return { flights: S.flights, supers: S.supers, name: S.online.acct.supabase && S.online.acct.supabase.name }; });

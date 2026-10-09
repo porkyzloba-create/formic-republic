@@ -246,3 +246,31 @@ test('adding usables does not reshuffle the Revolution Pass rewards', () => {
   const uses = []; for (let t = 1; t <= 30; t++){ const r = g.run(`passReward(${t}, false)`); if (r.t === 'use') uses.push(t + ':' + r.id); }
   assert.deepEqual(uses, ['4:basket', '8:oil', '12:flare', '16:tonic', '24:hourglass', '28:rush']);
 });
+
+test('privacy: statistics switch defaults on, backfills on old saves, survives a flight and a save wipe', () => {
+  const g = loadGame(); g.newGame();
+  assert.equal(g.S.privacy.stats, true);
+  assert.equal(g.run(`normalize({lifetime:5}).privacy.stats`), true);
+  g.run(`PLATFORM.id = 'android'; Analytics.setStats(false); S.ascLife = 8e9; nuptialFlight(S);`);
+  assert.equal(g.S.privacy.stats, false);
+  g.run('wipeSave()'); assert.equal(g.S.privacy.stats, false);
+  assert.equal(g.run('Analytics.on()'), false);
+});
+
+test('privacy: no events are queued or sent with statistics off; events skip GeoIP', () => {
+  const g = loadGame(); g.newGame();
+  g.run(`PLATFORM.id = 'android'; Analytics.q = []; Analytics.ev('x', {a:1});`);
+  assert.equal(g.run('Analytics.q.length'), 1);
+  assert.equal(g.run('Analytics.q[0].properties.$geoip_disable'), true);
+  g.run('Analytics.setStats(false)'); assert.equal(g.run('Analytics.q.length'), 0);
+  g.run(`Analytics.ev('y')`); assert.equal(g.run('Analytics.q.length'), 0);
+});
+
+test('privacy: the policy is built from src/privacy.md and covers every data flow', async () => {
+  const { privacyHTML, build } = await import('../build.mjs');
+  const html = privacyHTML();
+  for (const k of ['league', 'PostHog', 'AdMob', 'RevenueCat', 'Steam', 'Google Fonts', 'Share my colony', 'Delete my league entry', 'Share anonymous play statistics', 'Queen\'s Lottery', 'Auto-Tapper'])
+    assert.ok(html.includes(k), `policy should mention ${k}`);
+  assert.ok(build().includes('const PRIVACY_POLICY = '));
+  assert.ok(!/<\/script/i.test(build().split('const PRIVACY_POLICY = ')[1].split('\n')[0]), 'policy must not close the script tag');
+});

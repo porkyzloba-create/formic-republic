@@ -1,0 +1,20 @@
+/* Privacy: the in-game policy reader, the statistics switch, league-entry deletion */
+.policyov{z-index:45}
+.policyov .card{max-width:560px;width:100%}
+.policy-text{max-height:min(62vh,560px);overflow-y:auto;text-align:left;font-size:13.5px;line-height:1.5;color:var(--ink,#1D1A2B);padding:2px 4px 8px;overscroll-behavior:contain}
+.policy-text h1{font-size:18px;margin:4px 0 2px;line-height:1.2}
+.policy-text h1+p{margin-top:0;opacity:.7;font-size:12px}
+.policy-text h2{font-size:14.5px;margin:16px 0 4px;color:var(--banner,#E5392D)}
+.policy-text p{margin:6px 0}
+.policy-text ul{margin:6px 0;padding-left:18px}
+.policy-text li{margin:3px 0}
+.policy-text a{color:inherit;text-decoration:underline;overflow-wrap:anywhere}
+.srow.priv-row{grid-template-columns:1fr auto;align-items:center;margin:0 12px}
+.priv-id code{font-size:11px;overflow-wrap:anywhere;user-select:all}
+.tgl{flex:none;width:52px;height:30px;border-radius:15px;border:2px solid var(--ink,#1D1A2B);background:#d9d3c7;position:relative;cursor:pointer;padding:0}
+.tgl i{position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;border:2px solid var(--ink,#1D1A2B);transition:left .15s}
+.tgl[aria-checked="true"]{background:var(--gem,#FFC738)}
+.tgl[aria-checked="true"] i{left:25px}
+.tgl:disabled{opacity:.45;cursor:default}
+.lb-del{display:block;margin:18px auto 6px;font-size:12px}
+.lb-del.armed{color:var(--banner,#E5392D);font-weight:800}

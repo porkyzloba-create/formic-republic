@@ -36,7 +36,9 @@ src/
   head.html, markup.html, tail.html   page skeleton and static markup
   styles/   01-base … 07-online        CSS, applied in name order (later files restyle earlier ones)
   js/       00-helpers … 99-main       scripts, concatenated in name order into one shared global scope
-build.mjs                              stitches src/ into dist/
+  privacy.md                           the privacy policy (one source: shown in-game and built to docs/)
+build.mjs                              stitches src/ into dist/, and src/privacy.md into docs/privacy.html
+docs/privacy.html                      the hostable privacy policy page (GitHub Pages: /docs on main)
 test/                                  logic tests (test/load-game.mjs runs the real scripts in a Node VM)
 test/e2e/smoke.mjs                     browser play-through
 supabase/migrations/                   the league server (tables + fr_* functions)
@@ -71,3 +73,16 @@ Supabase project `formic-republic` (ref `pfjixomcpkcrpbvdjekh`, Frankfurt). The 
 the `fr_*` SQL functions; tables are locked. Weekly score = pass merit earned that ISO week
 (UTC). The server caps how fast a score can rise (2.5 points/second with a 2,500-point buffer),
 and points above the cap are reported again later, not lost.
+
+## Privacy
+
+The policy lives in `src/privacy.md`. `npm run build` embeds it in the game (Privacy policy
+buttons in the Flight tab, Shop and League) and writes `docs/privacy.html`. To get the public URL
+the store listings need, turn on GitHub Pages for this repo (Settings → Pages → Deploy from
+branch `main`, folder `/docs`); it is then
+`https://porkyzloba-create.github.io/formic-republic/privacy.html`. The store shells should pass that
+as `FR_PLATFORM.privacyUrl` (adds an "Open online" button). Fill in `[CONTACT EMAIL]` before release.
+
+Player controls the policy promises: the "Share anonymous play statistics" switch (Flight tab,
+`S.privacy.stats`, kept through flights and save wipes) and "Delete my league entry" (League tab,
+server function `fr_delete_player`).

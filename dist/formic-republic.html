@@ -1114,6 +1114,26 @@ body{background:var(--paper);background-image:radial-gradient(rgba(29,26,43,.035
 .mile-ant{width:84px;height:84px;margin:0 auto -4px;border-radius:50%;background:var(--crumb);border:3px solid var(--ink);display:grid;place-items:center;overflow:hidden}
 .mile-ant svg{width:76px;height:76px;margin-top:8px}
 @media (prefers-reduced-motion: reduce){.spin-pill,.advisor.pop{animation:none}}
+/* Privacy: the in-game policy reader, the statistics switch, league-entry deletion */
+.policyov{z-index:45}
+.policyov .card{max-width:560px;width:100%}
+.policy-text{max-height:min(62vh,560px);overflow-y:auto;text-align:left;font-size:13.5px;line-height:1.5;color:var(--ink,#1D1A2B);padding:2px 4px 8px;overscroll-behavior:contain}
+.policy-text h1{font-size:18px;margin:4px 0 2px;line-height:1.2}
+.policy-text h1+p{margin-top:0;opacity:.7;font-size:12px}
+.policy-text h2{font-size:14.5px;margin:16px 0 4px;color:var(--banner,#E5392D)}
+.policy-text p{margin:6px 0}
+.policy-text ul{margin:6px 0;padding-left:18px}
+.policy-text li{margin:3px 0}
+.policy-text a{color:inherit;text-decoration:underline;overflow-wrap:anywhere}
+.srow.priv-row{grid-template-columns:1fr auto;align-items:center;margin:0 12px}
+.priv-id code{font-size:11px;overflow-wrap:anywhere;user-select:all}
+.tgl{flex:none;width:52px;height:30px;border-radius:15px;border:2px solid var(--ink,#1D1A2B);background:#d9d3c7;position:relative;cursor:pointer;padding:0}
+.tgl i{position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;border:2px solid var(--ink,#1D1A2B);transition:left .15s}
+.tgl[aria-checked="true"]{background:var(--gem,#FFC738)}
+.tgl[aria-checked="true"] i{left:25px}
+.tgl:disabled{opacity:.45;cursor:default}
+.lb-del{display:block;margin:18px auto 6px;font-size:12px}
+.lb-del.armed{color:var(--banner,#E5392D);font-weight:800}
 </style>
 
 <div class="app">
@@ -1195,6 +1215,16 @@ body{background:var(--paper);background-image:radial-gradient(rgba(29,26,43,.035
 </div>
 <canvas class="confetti" id="confetti" hidden></canvas>
 
+<div class="modal policyov" id="policyov" hidden>
+  <div class="card" role="dialog" aria-modal="true" aria-labelledby="pol-band">
+    <div class="card-band" id="pol-band">Privacy policy</div>
+    <div class="card-body">
+      <div class="policy-text" id="pol-text" tabindex="0"></div>
+      <div class="ad-actions"><button class="btn ghost" id="pol-web" hidden>Open online</button><button class="btn gold" id="pol-close">Close</button></div>
+    </div>
+  </div>
+</div>
+
 <div class="modal" id="adov" hidden style="z-index:40">
   <div class="card" role="dialog" aria-modal="true" aria-labelledby="ad-band">
     <div class="card-band" id="ad-band">Sponsored broadcast</div>
@@ -1219,6 +1249,7 @@ body{background:var(--paper);background-image:radial-gradient(rgba(29,26,43,.035
 </div>
 
 <script>
+const PRIVACY_POLICY = "<h1>Formic Republic Privacy Policy<\/h1>\n<p>Effective 9 October 2026.<\/p>\n<p>This policy explains what information the game Formic Republic uses, why, who else handles it, and the choices you have. It covers the Google Play (Android) version, the Steam version and the browser preview.<\/p>\n<h2>The short version<\/h2>\n<ul><li>Your colony's progress is saved <b>on your device<\/b>. Taps, critical taps, the Queen's Lottery, milestones, Comrade Ant's tips and the Auto-Tapper all run on your device.<\/li><li>The <b>weekly league<\/b> and <b>alliances<\/b> are optional. If you join, the colony name you pick and your weekly score are shown publicly to other players. You can delete your league entry in the game at any time.<\/li><li>The store versions send <b>anonymous play statistics<\/b> (for example \"finished the tutorial\" or \"opened a pack\") tagged with a random install ID. No name, email, advertising ID or location. You can switch this off in the game.<\/li><li>On Android, <b>ads are only shown when you choose to watch one<\/b> for a reward. They are served by Google AdMob, which collects device information as described below.<\/li><li>We never sell your information.<\/li><\/ul>\n<h2>Who we are<\/h2>\n<p>Formic Republic is made by the Formic Republic team (\"we\", \"us\"). For any privacy question or request, write to <b>[CONTACT EMAIL]<\/b>.<\/p>\n<h2>Information that stays on your device<\/h2>\n<p>The game keeps your save (crumbs, castes, research, cards, amber, pass progress, medals, lottery spins, Auto-Tapper time, settings such as sound and the statistics switch) in your device's app storage. On Steam the save is also written to a file that Steam Cloud may sync between your computers (see \"Steam\"). We cannot see this save. \"Dissolve the Republic\" in the Flight tab deletes it.<\/p>\n<h2>Weekly league and alliances (optional)<\/h2>\n<p>Nothing is sent until you choose to enter the league. When you do, our league server stores:<\/p>\n<ul><li>the <b>colony name<\/b> you pick (2 to 20 characters) and, if you found or join one, your <b>alliance's name<\/b> and invite code;<\/li><li>your <b>weekly scores<\/b> and the points you added to your alliance each week;<\/li><li>a random <b>player ID<\/b> and a secret key that proves the entry is yours (the server keeps only a scrambled hash of the key), plus when the entry was created and last used.<\/li><\/ul>\n<p><b>Public:<\/b> other players can see your colony name, alliance, score and rank on the leaderboards, and alliance members see each other's names and points. Please don't use your real name or anything personal as a colony or alliance name.<\/p>\n<p>The league server runs on <b>Supabase<\/b> in Frankfurt, Germany (EU). Like any web service, it briefly logs technical request data such as IP addresses for security and troubleshooting; we don't use these to identify players.<\/p>\n<p><b>Why:<\/b> to run the league you asked to join (performance of our agreement with you).<\/p>\n<p><b>How long:<\/b> until you delete your entry. \"Delete my league entry\" in the League tab removes your player record, names, scores and alliance points from the server immediately; if you were the last member of an alliance, the alliance is deleted too. Deleting your save does not delete your league entry, so do that first if you want both gone.<\/p>\n<h2>Anonymous play statistics (Google Play and Steam versions)<\/h2>\n<p>To learn which parts of the game people enjoy and where they get stuck, the store versions send short event messages to <b>PostHog<\/b> (PostHog Cloud EU, servers in Frankfurt, Germany). Each message contains:<\/p>\n<ul><li>the event: game session started, tutorial step reached or finished, Nuptial Flight or Supercolony taken, pack opened, purchase made (product and displayed price), ad reward claimed, lottery spin and prize, share button used, milestone reached, league or alliance joined;<\/li><li>a few game numbers (flights, supercolonies, rough size of your colony, amber balance) and the platform (Android or Steam);<\/li><li>a random <b>install ID<\/b> created by the game. It is not linked to your name, email, Google or Steam account, advertising ID or league entry.<\/li><\/ul>\n<p>The PostHog project is set to <b>discard IP addresses<\/b>, and the game asks PostHog not to look up your location. No screen recordings are made.<\/p>\n<p><b>Why:<\/b> our legitimate interest in improving the game. <b>Your choice:<\/b> switch off \"Share anonymous play statistics\" under Privacy in the Flight tab; nothing more is sent from then on. To have statistics already sent deleted, email us the install ID shown in the same place. Deleting your save also starts a new install ID.<\/p>\n<p><b>How long:<\/b> statistics are kept for as long as they're useful for improving the game, and at most 2 years.<\/p>\n<h2>Sharing your colony<\/h2>\n<p>\"Share my colony\" draws a poster image on your device (your colony name, crumbs per second and a few game totals) and opens your device's share sheet or saves the image. Where it goes is up to you; we don't receive the image. The statistics above only record that the share button was used.<\/p>\n<h2>Ads (Android only)<\/h2>\n<p>The Android version shows <b>rewarded ads only when you tap a \"watch\" button<\/b>. Ads are served by <b>Google AdMob<\/b>. When an ad loads, Google may collect your device's advertising ID, IP address, device and app information, and ad interactions, to show and measure ads and prevent fraud. In the EEA, UK and Switzerland, the game asks for your consent before ads are personalised, and you can change your choice any time under \"Ad privacy choices\". You can also reset or delete your advertising ID in your Android settings. See how Google uses information: <a href=\"https://policies.google.com/technologies/partner-sites\" target=\"_blank\" rel=\"noopener\">https://policies.google.com/technologies/partner-sites<\/a><\/p>\n<p>The Steam version and the browser preview have no ads.<\/p>\n<h2>Purchases<\/h2>\n<p>Purchases on Android go through <b>Google Play<\/b>; we never see your card or payment details. To confirm and restore purchases we use <b>RevenueCat<\/b>, which receives the purchase receipt, the product, price, currency and store country, and a random app user ID. See <a href=\"https://www.revenuecat.com/privacy\" target=\"_blank\" rel=\"noopener\">https://www.revenuecat.com/privacy<\/a><\/p>\n<h2>Steam<\/h2>\n<p>The Steam version uses Valve's Steam services for purchases, achievements and Steam Cloud saves, under Valve's privacy policy: <a href=\"https://store.steampowered.com/privacy_agreement/\" target=\"_blank\" rel=\"noopener\">https://store.steampowered.com/privacy_agreement/<\/a><\/p>\n<h2>Fonts<\/h2>\n<p>The game loads its two typefaces from <b>Google Fonts<\/b>, so your device contacts Google's servers, which see your IP address. See <a href=\"https://developers.google.com/fonts/faq/privacy\" target=\"_blank\" rel=\"noopener\">https://developers.google.com/fonts/faq/privacy<\/a><\/p>\n<h2>Browser preview on claude.ai<\/h2>\n<p>The preview runs inside claude.ai. Ads and purchases there are simulated and nothing is charged, and play statistics are off. If the league server can't be reached, the preview keeps its league inside the page's own claude.ai storage, where other people who open the same preview can see your colony name and score.<\/p>\n<h2>Children<\/h2>\n<p>Formic Republic is not directed at children under 13, and we don't knowingly collect information from them. If you believe a child has entered the league, contact us and we will delete the entry.<\/p>\n<h2>Where information is processed<\/h2>\n<p>The league server and the play statistics are hosted in the EU. Google, RevenueCat and Valve may process information in other countries, including the United States, under their own safeguards such as the EU Standard Contractual Clauses.<\/p>\n<h2>Your rights<\/h2>\n<p>Depending on where you live (for example under the EU and UK GDPR), you can ask to access, correct or delete information about you, object to or restrict its use, and take a copy of it. Most of this you can do yourself in the game: rename or delete your league entry, switch statistics off, delete your save. For anything else, email <b>[CONTACT EMAIL]<\/b>; for statistics or league requests, include your install ID or colony name so we can find the data. You also have the right to complain to your local data protection authority.<\/p>\n<h2>Changes<\/h2>\n<p>If this policy changes, we'll update the date at the top and, for important changes, tell you in the game.<\/p>";
 /* ============================================================
    HELPERS
    ============================================================ */
@@ -1625,7 +1656,7 @@ function fresh(){
     dir:{day:'', list:[], chest:false, swapped:false, week:'', days:[], weekClaimed:false},
     abyss:{depth:0, torches:5, day:'', extra:0, shards:0, ppity:0, wins:0},
     flags:{seasons:{}}, iap:{owned:{}, first:{}}, ads:{day:'', n:{}, ex:0}, sound:true, started:Date.now(), last:Date.now(),
-    online:freshOnline(), spin:{day:'', used:0, ads:0, total:0, jackpots:0}, auto:{until:0, forever:false, on:true}};
+    online:freshOnline(), spin:{day:'', used:0, ads:0, total:0, jackpots:0}, auto:{until:0, forever:false, on:true}, privacy:{stats:true}};
 }
 // Online league: this week's score is kept locally and reported to the server; acct holds one
 // identity per backend ('supabase' for the real game, 'preview' for the claude.ai preview league).
@@ -1704,7 +1735,7 @@ function availableUpgrades(s){ return UPGRADES.filter(u => !s.bought.includes(u.
 function nextLockedUpgrade(s){ return UPGRADES.filter(u => !s.bought.includes(u.id) && !u.unlocked(s)).sort((a,b) => a.cost-b.cost)[0]; }
 
 const PERMA = ['abyss','dir','medals','seenMedals','lifetime','taps','picnics','anteaters','flyers','rubbles','incidents','raids','daily','quotaN','flags','sound','started',
-  'gems','inv','packs','cards','shards','pass','pity','shopDay','tapMerit','crowns','crownsTotal','supers','doctrine','war','hard','online','spin','auto'];
+  'gems','inv','packs','cards','shards','pass','pity','shopDay','tapMerit','crowns','crownsTotal','supers','doctrine','war','hard','online','spin','auto','privacy'];
 function resetRun(s, extra){ const k = {}; for (const f of PERMA) k[f] = s[f]; Object.assign(s, fresh(), k, extra); }
 function nuptialFlight(s, force){
   const g = pherGain(s); if (g < 1 && !force) return 0;
@@ -1725,7 +1756,8 @@ function supercolony(s){
 // "Dissolve the Republic": delete all progress. The league identity and this week's league
 // points are kept, because the server already holds them (dropping them would orphan the
 // player's leaderboard entry and make the next reports look like a score going backwards).
-function wipeSave(){ const online = S.online; S = fresh(); S.online = online; return S; }
+// The privacy choices (S.privacy) are kept too. The league entry is deleted separately, in the League tab.
+function wipeSave(){ const online = S.online, privacy = S.privacy; S = fresh(); S.online = online; S.privacy = privacy; return S; }
 
 /* ============================================================
    PERSISTENCE
@@ -1755,6 +1787,7 @@ function normalize(o){
   s.online.chest = Object.assign({week:'', got:[]}, s.online.chest||{});
   s.spin = Object.assign({day:'', used:0, ads:0, total:0, jackpots:0}, s.spin||{});
   s.auto = Object.assign({until:0, forever:false, on:true}, s.auto||{});
+  s.privacy = Object.assign({stats:true}, s.privacy||{});
   if (o.ascLife === undefined) s.ascLife = s.lifetime;
   return s;
 }
@@ -1875,9 +1908,25 @@ window.FR_receive = msg => {
 if (typeof window.FR_onMessage === 'function') window.FR_onMessage(window.FR_receive);
 function openExternal(url){ if (!url) return; if (hasNative) Native.post('open', {url}); else window.open(url, '_blank', 'noopener'); }
 function privacyLinks(){
-  const a = PLATFORM.privacyUrl ? `<button class="linkbtn" data-ext="privacy">Privacy policy</button>` : '';
+  const a = `<button class="linkbtn" data-policy>Privacy policy</button>`;
   const b = PLATFORM.adChoices ? `<button class="linkbtn" data-adchoices>Ad privacy choices</button>` : '';
-  return a || b ? `<div class="privacy-links">${a}${b}</div>` : '';
+  return `<div class="privacy-links">${a}${b}</div>`;
+}
+// The policy text is built from src/privacy.md into PRIVACY_POLICY (see build.mjs), so it
+// reads the same offline, in every shell, as the hosted page at PLATFORM.privacyUrl.
+function showPolicy(){
+  $('pol-text').innerHTML = typeof PRIVACY_POLICY === 'string' ? PRIVACY_POLICY : '';
+  $('pol-web').hidden = !PLATFORM.privacyUrl;
+  $('policyov').hidden = false; $('pol-text').scrollTop = 0; $('pol-close').focus();
+}
+function privacyPanelHTML(){
+  const on = Analytics.available(), st = S.privacy.stats !== false;
+  return `<div class="sec-h"><h3 class="ink">Privacy</h3></div>
+    <div class="srow priv-row"><div class="row-main"><div class="row-name">Share anonymous play statistics</div>
+      <div class="row-sub">${on ? 'Events such as finishing the tutorial or opening a pack, with a random install ID. No name, email, ad ID or location.' : 'Off in the browser preview: nothing is sent.'}</div>
+      ${on ? `<div class="row-sub priv-id">Install ID: <code>${esc(st ? Analytics.id() : (S.flags.aid || 'none yet'))}</code></div>` : ''}</div>
+      <button class="tgl" role="switch" data-stats aria-checked="${on && st}" ${on ? '' : 'disabled'} aria-label="Share anonymous play statistics"><i></i></button></div>
+    ${privacyLinks()}`;
 }
 // Preview tools: only in the browser build (never in the Google Play or Steam builds),
 // so features gated behind days of play can be checked straight away.
@@ -2761,6 +2810,7 @@ const SupaAPI = {
   create(a, name){ return this.rpc('fr_create_alliance', {p_id:a.id, p_secret:a.secret, p_name:name}); },
   join(a, code){ return this.rpc('fr_join_alliance', {p_id:a.id, p_secret:a.secret, p_code:code}); },
   leave(a){ return this.rpc('fr_leave_alliance', {p_id:a.id, p_secret:a.secret}); },
+  remove(a){ return this.rpc('fr_delete_player', {p_id:a.id, p_secret:a.secret}); },
 };
 
 // Preview backend: the claude.ai artifact's shared database (only used when Supabase is unreachable).
@@ -2842,13 +2892,14 @@ function makeDbAPI(db, uid){
       else { const al = await ar.get(); if (al.exists && al.data().owner === uid) await ar.update({owner:rest[0].id}); }
       return {alliance:null};
     }),
+    remove: a => wrap(async () => { await api.leave(a); await meRef().delete(); return {deleted:true}; }),
   };
   return api;
 }
 
 const Online = {
   api:null, status:'idle', lastTry:0, lastSync:0, lastMine:0,
-  board:null, aboard:null, mine:null, boardAt:0, aboardAt:0, view:'players', busy:false, leaveArmed:0,
+  board:null, aboard:null, mine:null, boardAt:0, aboardAt:0, view:'players', busy:false, leaveArmed:0, delArmed:0,
   acct(){ return this.api ? S.online.acct[this.api.kind] || null : null; },
   wanted(){ return tab === 'ranks' || tab === 'alliance' || Object.keys(S.online.acct).length > 0; },
   async init(){
@@ -2945,6 +2996,11 @@ const Online = {
       } else if (kind === 'leave'){
         await this.api.leave(a); this.mine = null; this.aboardAt = this.boardAt = 0;
         toast('You left the alliance', 'Your colony marches alone again.', 'neutral', 'flag');
+      } else if (kind === 'delete'){
+        // Removes the player, names, scores and alliance points from the server (privacy policy: "Delete my league entry").
+        await this.api.remove(a); delete S.online.acct[this.api.kind];
+        this.mine = this.board = this.aboard = null; this.aboardAt = this.boardAt = this.lastMine = 0; this.renaming = false;
+        toast('League entry deleted', 'Your colony name and scores are gone from the server.', 'neutral', 'scroll');
       }
       save();
     } catch(e){ toast("That didn't work", e.message, 'bad', 'warn'); Sound.bad(); }
@@ -3023,6 +3079,8 @@ function ranksHTML(){
   }
   html += `<div class="shop-sec">Weekly rewards · paid when the week ends</div><div class="rewards">${LEAGUE_REWARDS.map(r => `<span><b>${r.label}</b></span><span>${rewardLine(r)}</span>`).join('')}</div>`;
   html += `<div class="locked">The server checks every report: it counts at most about 9,000 points an hour, and anything above that waits and counts later. Points don't carry over: each week starts at zero on Monday (UTC).</div>`;
+  if (a) html += `<button class="linkbtn lb-del${Date.now() < Online.delArmed ? ' armed' : ''}" data-on="delete" ${Online.busy ? 'disabled' : ''}>${Date.now() < Online.delArmed ? 'Tap again: delete my colony name and scores from the server' : 'Delete my league entry'}</button>`;
+  html += privacyLinks();
   return html;
 }
 function allianceHTML(){
@@ -3060,6 +3118,7 @@ function onlineClick(el){
   else if (k === 'rename') Online.act('rename', val('on-rename'));
   else if (k === 'create') Online.act('create', val('on-aname'));
   else if (k === 'join') Online.act('join', val('on-code'));
+  else if (k === 'delete'){ if (Date.now() < Online.delArmed){ Online.delArmed = 0; Online.act('delete'); } else { Online.delArmed = Date.now() + 4000; render(); setTimeout(() => { if (tab === 'ranks') render(); }, 4100); } }
   else if (k === 'leave'){ if (Date.now() < Online.leaveArmed){ Online.leaveArmed = 0; Online.act('leave'); } else { Online.leaveArmed = Date.now() + 4000; render(); } }
   else if (k === 'copy'){ const code = Online.mine && Online.mine.code; try { navigator.clipboard.writeText(code).then(() => toast('Code copied', `Send ${code} to your friends.`, 'good', 'flag'), () => toast('Alliance code', code, 'good', 'flag')); } catch(e){ toast('Alliance code', code, 'good', 'flag'); } }
   else if (k === 'sync'){ Online.sync(true).then(() => { Online.boardAt = 0; Online.load('players'); }); }
@@ -3248,20 +3307,23 @@ async function shareColony(where){
 
 /* ---------- anonymous analytics (PostHog, EU) ----------
    On in the store builds; off in the browser preview unless FR_PLATFORM.analytics is true.
-   Sends a random install id (no names, no emails); the PostHog project anonymises IPs.
-   Mention it in the store privacy policy. */
+   Sends a random install id (no names, no emails); the PostHog project discards IPs and
+   each event asks PostHog to skip the GeoIP lookup. The player can switch it off
+   (S.privacy.stats, Flight tab > Privacy). Described in src/privacy.md: keep them in step. */
 const Analytics = {
   host:'https://eu.i.posthog.com', key:'phc_teWpivyJJZ48jraYrC7wwgnNFrxbUxALeCLgdoqdkwVY',
   q:[], last:0,
-  on(){ return PLATFORM.analytics === true || (PLATFORM.id !== 'web' && PLATFORM.analytics !== false); },
+  available(){ return PLATFORM.analytics === true || (PLATFORM.id !== 'web' && PLATFORM.analytics !== false); },
+  on(){ return this.available() && !(S && S.privacy && S.privacy.stats === false); },
+  setStats(v){ S.privacy.stats = !!v; if (!v) this.q = []; },
   id(){ if (!S.flags.aid) S.flags.aid = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : 'a' + Date.now().toString(36) + Math.random().toString(36).slice(2); return S.flags.aid; },
   ev(name, props){
     if (!S || !this.on()) return;
-    this.q.push({event:name, timestamp:new Date().toISOString(), properties:Object.assign({distinct_id:this.id(), platform:PLATFORM.id, flights:S.flights, supers:S.supers, lifetime_log10: Math.floor(Math.log10(1 + S.lifetime))}, props || {})});
+    this.q.push({event:name, timestamp:new Date().toISOString(), properties:Object.assign({distinct_id:this.id(), $geoip_disable:true, platform:PLATFORM.id, flights:S.flights, supers:S.supers, lifetime_log10: Math.floor(Math.log10(1 + S.lifetime))}, props || {})});
     if (this.q.length >= 25) this.flush();
   },
   flush(){
-    if (!this.q.length) return; const batch = this.q.splice(0); this.last = Date.now();
+    if (!this.q.length) return; if (!this.on()){ this.q = []; return; } const batch = this.q.splice(0); this.last = Date.now();
     try { fetch(this.host + '/batch/', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({api_key:this.key, batch}), keepalive:true}).catch(() => {}); } catch(e){}
   },
 };
@@ -3824,7 +3886,7 @@ function render(){
       </dl>
       <button class="gbtn big share-btn" data-share="record">${icon('up')} Share my colony</button>
       <button class="btn ghost" id="f-wipe"></button>
-      ${privacyLinks()}
+      ${privacyPanelHTML()}
     </div>`;
   }
   refresh();
@@ -4155,7 +4217,9 @@ function onPanelClick(e){
   if (e.target.closest('[data-descend]')){ startGuardian(); return; }
   const tb = e.target.closest('[data-torch]'); if (tb){ buyTorch(tb.dataset.torch); return; }
   if (e.target.closest('[data-primpack]')){ buyPrimPack(); return; }
-  if (e.target.closest('[data-ext="privacy"]')){ openExternal(PLATFORM.privacyUrl); return; }
+  if (e.target.closest('[data-policy]')){ showPolicy(); return; }
+  if (e.target.closest('[data-stats]')){ const t = e.target.closest('[data-stats]'); if (t.disabled) return; Analytics.setStats(S.privacy.stats === false); save(); render();
+    toast('Play statistics', S.privacy.stats ? 'Switched on. Thank you, comrade.' : 'Switched off. Nothing more will be sent.', 'neutral', 'scroll'); return; }
   if (e.target.closest('[data-adchoices]')){ Native.post('adchoices', {}); return; }
   const dcb = e.target.closest('[data-dclaim]'); if (dcb){ claimDirective(+dcb.dataset.dclaim); afterChange(); return; }
   const dsw = e.target.closest('[data-dswap]'); if (dsw){ swapDirective(+dsw.dataset.dswap); return; }
@@ -4821,6 +4885,9 @@ function start(data){
   $('advisor').addEventListener('pointerdown', e => e.stopPropagation());
   $('advisor').addEventListener('click', e => { e.stopPropagation(); const go = $('advisor').dataset.go; Fun.hideAdvisor(); if (go === 'pass'){ goTab('pass'); } else if (go === 'ranks'){ goTab('ranks'); } else if (go === 'shop'){ goTab('shop'); } else if (go){ goTab(go); } });
   $('spin-btn').addEventListener('click', () => Fun.spin());
+  $('pol-web').addEventListener('click', () => openExternal(PLATFORM.privacyUrl));
+  $('policyov').addEventListener('click', e => { if (e.target.id === 'policyov' || e.target.closest('#pol-close')) $('policyov').hidden = true; });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('policyov').hidden) $('policyov').hidden = true; });
   $('spin-close').addEventListener('click', () => { if (!Fun.spinBusy){ $('spinov').hidden = true; refresh(); } });
   addEventListener('pagehide', () => save(true));
   Native.post('ready', {});                                    // shell answers with local store prices

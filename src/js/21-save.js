@@ -26,6 +26,7 @@ function normalize(o){
   s.online.chest = Object.assign({week:'', got:[]}, s.online.chest||{});
   s.spin = Object.assign({day:'', used:0, ads:0, total:0, jackpots:0}, s.spin||{});
   s.auto = Object.assign({until:0, forever:false, on:true}, s.auto||{});
+  s.privacy = Object.assign({stats:true}, s.privacy||{});
   if (o.ascLife === undefined) s.ascLife = s.lifetime;
   return s;
 }

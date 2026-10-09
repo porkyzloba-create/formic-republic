@@ -17,5 +17,7 @@ Read README.md first for the layout.
 - The claude.ai preview is published from `dist/formic-republic.html` to the existing
   artifact https://claude.ai/artifact/FC9HXdn7bK4UPLRwqiLdtN (update it in place; it
   declares the `db` and `user` capabilities for the preview league).
+- Anything new that sends data off the device (a new service, analytics event or league field)
+  must be added to `src/privacy.md` in the same change.
 - League server changes go in a new file in `supabase/migrations/` and are applied to
   Supabase project `pfjixomcpkcrpbvdjekh`.

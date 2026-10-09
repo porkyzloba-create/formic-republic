@@ -146,6 +146,9 @@ function start(data){
   $('advisor').addEventListener('pointerdown', e => e.stopPropagation());
   $('advisor').addEventListener('click', e => { e.stopPropagation(); const go = $('advisor').dataset.go; Fun.hideAdvisor(); if (go === 'pass'){ goTab('pass'); } else if (go === 'ranks'){ goTab('ranks'); } else if (go === 'shop'){ goTab('shop'); } else if (go){ goTab(go); } });
   $('spin-btn').addEventListener('click', () => Fun.spin());
+  $('pol-web').addEventListener('click', () => openExternal(PLATFORM.privacyUrl));
+  $('policyov').addEventListener('click', e => { if (e.target.id === 'policyov' || e.target.closest('#pol-close')) $('policyov').hidden = true; });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('policyov').hidden) $('policyov').hidden = true; });
   $('spin-close').addEventListener('click', () => { if (!Fun.spinBusy){ $('spinov').hidden = true; refresh(); } });
   addEventListener('pagehide', () => save(true));
   Native.post('ready', {});                                    // shell answers with local store prices

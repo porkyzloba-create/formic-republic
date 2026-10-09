@@ -87,6 +87,7 @@ const SupaAPI = {
   create(a, name){ return this.rpc('fr_create_alliance', {p_id:a.id, p_secret:a.secret, p_name:name}); },
   join(a, code){ return this.rpc('fr_join_alliance', {p_id:a.id, p_secret:a.secret, p_code:code}); },
   leave(a){ return this.rpc('fr_leave_alliance', {p_id:a.id, p_secret:a.secret}); },
+  remove(a){ return this.rpc('fr_delete_player', {p_id:a.id, p_secret:a.secret}); },
 };
 
 // Preview backend: the claude.ai artifact's shared database (only used when Supabase is unreachable).
@@ -168,13 +169,14 @@ function makeDbAPI(db, uid){
       else { const al = await ar.get(); if (al.exists && al.data().owner === uid) await ar.update({owner:rest[0].id}); }
       return {alliance:null};
     }),
+    remove: a => wrap(async () => { await api.leave(a); await meRef().delete(); return {deleted:true}; }),
   };
   return api;
 }
 
 const Online = {
   api:null, status:'idle', lastTry:0, lastSync:0, lastMine:0,
-  board:null, aboard:null, mine:null, boardAt:0, aboardAt:0, view:'players', busy:false, leaveArmed:0,
+  board:null, aboard:null, mine:null, boardAt:0, aboardAt:0, view:'players', busy:false, leaveArmed:0, delArmed:0,
   acct(){ return this.api ? S.online.acct[this.api.kind] || null : null; },
   wanted(){ return tab === 'ranks' || tab === 'alliance' || Object.keys(S.online.acct).length > 0; },
   async init(){
@@ -271,6 +273,11 @@ const Online = {
       } else if (kind === 'leave'){
         await this.api.leave(a); this.mine = null; this.aboardAt = this.boardAt = 0;
         toast('You left the alliance', 'Your colony marches alone again.', 'neutral', 'flag');
+      } else if (kind === 'delete'){
+        // Removes the player, names, scores and alliance points from the server (privacy policy: "Delete my league entry").
+        await this.api.remove(a); delete S.online.acct[this.api.kind];
+        this.mine = this.board = this.aboard = null; this.aboardAt = this.boardAt = this.lastMine = 0; this.renaming = false;
+        toast('League entry deleted', 'Your colony name and scores are gone from the server.', 'neutral', 'scroll');
       }
       save();
     } catch(e){ toast("That didn't work", e.message, 'bad', 'warn'); Sound.bad(); }
@@ -349,6 +356,8 @@ function ranksHTML(){
   }
   html += `<div class="shop-sec">Weekly rewards · paid when the week ends</div><div class="rewards">${LEAGUE_REWARDS.map(r => `<span><b>${r.label}</b></span><span>${rewardLine(r)}</span>`).join('')}</div>`;
   html += `<div class="locked">The server checks every report: it counts at most about 9,000 points an hour, and anything above that waits and counts later. Points don't carry over: each week starts at zero on Monday (UTC).</div>`;
+  if (a) html += `<button class="linkbtn lb-del${Date.now() < Online.delArmed ? ' armed' : ''}" data-on="delete" ${Online.busy ? 'disabled' : ''}>${Date.now() < Online.delArmed ? 'Tap again: delete my colony name and scores from the server' : 'Delete my league entry'}</button>`;
+  html += privacyLinks();
   return html;
 }
 function allianceHTML(){
@@ -386,6 +395,7 @@ function onlineClick(el){
   else if (k === 'rename') Online.act('rename', val('on-rename'));
   else if (k === 'create') Online.act('create', val('on-aname'));
   else if (k === 'join') Online.act('join', val('on-code'));
+  else if (k === 'delete'){ if (Date.now() < Online.delArmed){ Online.delArmed = 0; Online.act('delete'); } else { Online.delArmed = Date.now() + 4000; render(); setTimeout(() => { if (tab === 'ranks') render(); }, 4100); } }
   else if (k === 'leave'){ if (Date.now() < Online.leaveArmed){ Online.leaveArmed = 0; Online.act('leave'); } else { Online.leaveArmed = Date.now() + 4000; render(); } }
   else if (k === 'copy'){ const code = Online.mine && Online.mine.code; try { navigator.clipboard.writeText(code).then(() => toast('Code copied', `Send ${code} to your friends.`, 'good', 'flag'), () => toast('Alliance code', code, 'good', 'flag')); } catch(e){ toast('Alliance code', code, 'good', 'flag'); } }
   else if (k === 'sync'){ Online.sync(true).then(() => { Online.boardAt = 0; Online.load('players'); }); }
