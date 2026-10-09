@@ -1,0 +1,89 @@
+
+<div class="app">
+  <div class="toasts" id="toasts" aria-live="polite"></div>
+  <div class="ticker" aria-hidden="true"><div class="ticker-track" id="ticker"></div></div>
+
+  <div class="top">
+    <div class="bank">
+      <div class="bank-label">The people's larder</div>
+      <div class="bank-num" id="crumbs">0</div>
+      <div class="rates">
+        <span class="rchip"><b id="cps">0</b> / sec</span>
+        <span class="rchip"><b id="tapv">+1</b> per tap</span>
+        <span class="pher-chip" id="pherchip" hidden></span>
+      </div>
+    </div>
+    <div class="side">
+      <div class="side-row"><button class="gem-pill" id="gempill" aria-label="Amber gems, open the shop"></button><button class="snd" id="snd" aria-pressed="true" aria-label="Sound"></button></div>
+      <button class="flightbtn" id="flightbtn" aria-label="Nuptial Flight"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17C8 17 14 13 21 4c-2 8-7 13-13 15"/><path d="M7 14c3-1 6-3 9-6M10 18c2-1 4-3 6-5"/></svg><span>Flight</span><i class="badge red" id="flbadge" hidden></i></button>
+    </div>
+  </div>
+
+  <div class="quota" id="quota">
+    <div class="q-stamp" aria-hidden="true">PLAN<b id="q-num">1</b></div>
+    <div class="q-body">
+      <div class="q-top"><span class="q-text" id="q-text"></span><span class="q-count" id="q-count"></span></div>
+      <div class="q-bar"><div id="q-fill"></div></div>
+      <div class="q-reward" id="q-reward"></div>
+    </div>
+    <div class="q-done" aria-hidden="true"><span>FULFILLED</span></div>
+  </div>
+
+  <div class="belt" id="belt" aria-label="Usables"></div>
+
+  <div class="stage" id="stage" role="button" aria-label="Tap the colony to gather crumbs" tabindex="0">
+    <canvas id="cv"></canvas>
+    <div class="buffs" id="buffs"></div>
+    <div class="season" id="season"></div>
+    <div class="hint" id="hint">Tap the hill to gather crumbs</div>
+    <div class="fervor" id="fervor" hidden><span class="lbl" id="ferv-lbl">FERVOR ×1.0</span><div class="track"><div id="ferv-fill"></div></div></div>
+  </div>
+
+  <div class="panel">
+    <div class="groupbar" id="groupbar" role="tablist"></div>
+    <div class="subbar" id="subbar"></div>
+    <div class="list" id="list"></div>
+  </div>
+  <nav class="nav" id="nav" aria-label="Sections"></nav>
+</div>
+
+<div class="sheet" id="sheet" hidden role="dialog" aria-labelledby="sh-title">
+  <div class="sh-band"><span id="sh-no">Incident report</span><span id="sh-clock">25s</span></div>
+  <div class="sh-body">
+    <div class="sh-icon" id="sh-icon"></div>
+    <div><div class="sh-title" id="sh-title"></div><p id="sh-text"></p></div>
+  </div>
+  <div class="sh-actions"><button class="btn" id="sh-a"></button><button class="btn ghost" id="sh-b"></button></div>
+  <div class="fuse"><div id="sh-fill"></div></div>
+</div>
+
+<div class="opening" id="opening" hidden role="dialog" aria-labelledby="op-title">
+  <div class="op-title" id="op-title">Worker Pack</div>
+  <div class="op-sub" id="op-sub">Tap a card to reveal it</div>
+  <div class="op-cards" id="op-cards"></div>
+  <div class="op-actions"><button class="btn ghost" id="op-all">Reveal all</button><button class="btn gold" id="op-done" hidden>Collect</button></div>
+</div>
+
+<div class="modal" id="adov" hidden style="z-index:40">
+  <div class="card" role="dialog" aria-modal="true" aria-labelledby="ad-band">
+    <div class="card-band" id="ad-band">Sponsored broadcast</div>
+    <div class="card-body">
+      <div class="adscreen" id="ad-screen"><span id="ad-count">5</span></div>
+      <p id="ad-text"></p>
+      <div class="ad-actions"><button class="btn ghost" id="ad-cancel">Cancel</button><button class="btn confirm" id="ad-ok">OK</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="modal" hidden>
+  <div class="card" role="dialog" aria-modal="true" aria-labelledby="m-eyebrow">
+    <div class="card-band" id="m-eyebrow">The night shift reports</div>
+    <div class="card-body">
+      <div class="amount" id="m-amount">0</div>
+      <div id="m-extra"></div>
+      <p id="m-text"></p>
+      <button class="btn confirm" id="m-ok">Collect for the colony</button>
+    </div>
+  </div>
+</div>
+

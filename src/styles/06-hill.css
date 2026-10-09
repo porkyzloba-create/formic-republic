@@ -1,0 +1,13 @@
+/* ===== bigger hill on the Hill tab =====
+   The hill aims for ~42% of the screen; both it and the list can shrink, so the castes list
+   keeps about two rows on a typical phone. The Plan ticket hides its reward line there (unless training
+   needs its "Go to" button), which buys the hill extra room. Other tabs keep the strip. */
+.app[data-group="hill"] .stage{flex:0 1 42vh;min-height:170px}
+.app[data-group="hill"] .panel{flex:1 1 235px;min-height:150px}
+.app[data-group="hill"] .stage{transition:flex-basis .28s ease,min-height .28s ease}
+.app[data-group="hill"].compact .stage{flex-basis:118px;min-height:118px}   /* scrolled down the list: the hill tucks into a strip */
+@media (prefers-reduced-motion: reduce){.app[data-group="hill"] .stage{transition:none}}
+.app[data-group="hill"] .quota:not(.tut) .q-reward{display:none}
+.app[data-group="hill"] .quota:not(.tut){padding-block:6px}
+.app[data-group="hill"] .quota:not(.tut) .q-stamp{width:38px;height:38px}
+.app[data-group="hill"] .quota:not(.tut) .q-stamp b{font-size:17px}
