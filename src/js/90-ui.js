@@ -660,7 +660,7 @@ function onPanelClick(e){
     return;
   }
   if (e.target.id === 'f-wipe'){
-    if (Date.now() < wipeArmed){ S = fresh(); wipeArmed = 0; D = derive(S); initTut(); genQuota(); save(); colony.rebuild(); colony.reset(); tab='castes'; render(); }
+    if (Date.now() < wipeArmed){ wipeSave(); wipeArmed = 0; D = derive(S); initTut(); genQuota(); save(); colony.rebuild(); colony.reset(); tab='castes'; render(); }
     else { wipeArmed = Date.now() + 4000; refresh(); }
   }
 }

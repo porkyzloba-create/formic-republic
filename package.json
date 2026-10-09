@@ -1,0 +1,17 @@
+{
+  "name": "formic-republic",
+  "version": "0.4.0",
+  "private": true,
+  "description": "Formic Republic: an ant-colony idle game. One self-contained HTML file for the browser preview, the Expo (Android) shell and the Steam (Electron) shell.",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "check": "node build.mjs --check",
+    "test": "node --test test/*.test.mjs",
+    "test:e2e": "node test/e2e/smoke.mjs"
+  },
+  "engines": { "node": ">=20" },
+  "devDependencies": {
+    "playwright": "1.56.0"
+  }
+}

@@ -107,4 +107,8 @@ function supercolony(s){
   resetRun(s, {crowns:s.crowns+g, crownsTotal:s.crownsTotal+g, supers:s.supers+1, pher:0, flights:s.flights, edicts: cellar ? s.edicts : {}, jelly: cellar ? s.jelly : 0, ascLife:0, rep:{}, chal:null});
   return g;
 }
+// "Dissolve the Republic": delete all progress. The league identity and this week's league
+// points are kept, because the server already holds them (dropping them would orphan the
+// player's leaderboard entry and make the next reports look like a score going backwards).
+function wipeSave(){ const online = S.online; S = fresh(); S.online = online; return S; }
 
