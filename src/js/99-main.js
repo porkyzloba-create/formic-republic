@@ -57,7 +57,7 @@ function loop(t){
       fireEvent();
     }
     checkMedals(); checkDirectives();
-    checkHardship(); automate(t); checkPassSeason();
+    checkHardship(); automate(t); checkPassSeason(); Fun.tick(now);
     Online.tick(now);
     refresh();
   }
@@ -76,6 +76,9 @@ function start(data){
   render();
   colony.resize();
   checkDaily();
+  initMilestones();
+  $('advisor').querySelector('.adv-face').innerHTML = antFaceSVG();
+  Analytics.ev('session_start', {tut: tutStep(), gems: Math.floor(S.gems), pass_premium: !!S.pass.premium});
   if (!S.flags.v4){
     S.flags.v4 = true; S.gems += 50; S.packs.common = (S.packs.common||0) + 1;
     S.inv.rush = (S.inv.rush||0) + 1; S.inv.basket = (S.inv.basket||0) + 1;
@@ -102,6 +105,7 @@ function start(data){
   $('flightbtn').addEventListener('click', () => goTab('flight'));
   $('subbar').addEventListener('click', onPanelClick);
   $('m-extra').addEventListener('click', async e => {
+    const sh = e.target.closest('[data-share]'); if (sh){ shareColony(sh.dataset.share); return; }
     const b = e.target.closest('#m-ad2'); if (b && !b.disabled){ doubleOffline(b); return; }
     if (e.target.closest('#m-kit')){ await buyIAP('starter'); if (S.iap.owned.starter) $('m-ok').click(); }
   });
@@ -128,7 +132,13 @@ function start(data){
   $('sh-a').addEventListener('click', () => resolveEvent('a'));
   $('sh-b').addEventListener('click', () => resolveEvent('b'));
   $('snd').addEventListener('click', () => { S.sound = !S.sound; save(); refresh(); if (S.sound) Sound.buy(); });
-  document.addEventListener('visibilitychange', () => { if (document.hidden) save(true); });
+  document.addEventListener('visibilitychange', () => { if (document.hidden){ save(true); Analytics.flush(); } });
+  $('spinpill').addEventListener('click', e => { e.stopPropagation(); Fun.openSpin(); });
+  $('spinpill').addEventListener('pointerdown', e => e.stopPropagation());
+  $('advisor').addEventListener('pointerdown', e => e.stopPropagation());
+  $('advisor').addEventListener('click', e => { e.stopPropagation(); const go = $('advisor').dataset.go; Fun.hideAdvisor(); if (go === 'pass'){ goTab('pass'); } else if (go === 'ranks'){ goTab('ranks'); } else if (go === 'shop'){ goTab('shop'); } else if (go){ goTab(go); } });
+  $('spin-btn').addEventListener('click', () => Fun.spin());
+  $('spin-close').addEventListener('click', () => { if (!Fun.spinBusy){ $('spinov').hidden = true; refresh(); } });
   addEventListener('pagehide', () => save(true));
   Native.post('ready', {});                                    // shell answers with local store prices
   if (PLATFORM.achievements) S.medals.forEach(id => Monetize.achievement(id));   // re-sync medals earned earlier

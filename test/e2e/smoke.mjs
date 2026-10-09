@@ -112,6 +112,38 @@ try {
     if (await ev(() => Online.mine && Online.mine.code) !== 'ABC234') throw new Error('alliance not created');
     await page.click('[data-on="leave"]'); await page.click('[data-on="leave"]'); await page.waitForTimeout(500);
   });
+  await step('critical tap', async () => {
+    await page.click('#nav [data-group="hill"]'); await page.click('[data-gt="castes"]'); await page.waitForTimeout(200);
+    await ev(() => { colony.reset(); window.__r = Math.random; Math.random = () => 0.001; });   // end the Abyss fight first
+    const box = await page.locator('#stage').boundingBox(), t0 = await ev(() => S.crumbs);
+    await page.mouse.click(box.x + box.width * .3, box.y + box.height * .7);
+    const crit = await ev(() => lastCrit); await ev(() => { Math.random = window.__r; });
+    if (!crit) throw new Error('forced crit did not register');
+  });
+  await step('the Queen\'s Lottery: a free spin pays out', async () => {
+    await ev(() => { S.spin.day = ''; refresh(); }); await page.waitForTimeout(250);
+    if (await page.locator('#spinpill').isHidden()) throw new Error('FREE SPIN pill not shown on the hill');
+    await page.click('#spinpill'); await page.waitForTimeout(200);
+    const before = await ev(() => S.spin.total);
+    await page.click('#spin-btn'); await page.waitForTimeout(4800);
+    if (await ev(() => S.spin.total) !== before + 1) throw new Error('spin not granted');
+    if (!(await page.locator('#spin-btn').isDisabled()) && await ev(() => !adFree())) { /* ad spins still available: fine */ }
+    await page.click('#spin-close');
+  });
+  await step('Comrade Ant speaks and his tip opens the right tab', async () => {
+    await ev(() => Fun.say('Test line', 'cards')); await page.waitForTimeout(300);
+    await page.click('#advisor'); await page.waitForTimeout(200);
+    if (await ev(() => tab) !== 'cards') throw new Error('advisor tip did not navigate');
+  });
+  await step('milestone celebration and the share card', async () => {
+    await ev(() => { S.lifetime = Math.max(S.lifetime, MILESTONES[S.flags.mile].at); });
+    await page.waitForTimeout(700);
+    if (!(await ev(() => /Crumbs/.test(document.getElementById('m-amount').textContent)))) throw new Error('no milestone modal');
+    const dl = page.waitForEvent('download', { timeout: 8000 });
+    await page.click('#m-extra [data-share]');
+    const file = await dl; if (!/formic-republic\.png$/.test(file.suggestedFilename())) throw new Error('share card not offered');
+    await closeModals();
+  });
   await step('save survives a reload', async () => {
     const before = await ev(() => { save(true); return { flights: S.flights, supers: S.supers, name: S.online.acct.supabase && S.online.acct.supabase.name }; });
     await page.reload(); await page.waitForTimeout(600); await closeModals();

@@ -1080,6 +1080,40 @@ body{background:var(--paper);background-image:radial-gradient(rgba(29,26,43,.035
 .mems{border:1.5px solid var(--card-line);border-radius:14px;background:var(--soil);overflow:hidden}
 .osync{font-size:11px;font-weight:700;color:var(--dust);text-align:center;padding:2px 0 6px}
 .osync button{border:0;background:none;color:var(--ink);font:inherit;font-weight:900;text-decoration:underline;cursor:pointer;padding:2px 4px}
+/* ===== fun & growth: advisor, Lottery, confetti, share ===== */
+/* Comrade Ant: a speech bubble that pops up on the hill */
+.advisor{position:absolute;left:8px;right:8px;bottom:26px;z-index:3;display:grid;grid-template-columns:46px 1fr;gap:9px;align-items:center;text-align:left;
+  background:var(--soil);border:2px solid var(--ink);border-radius:16px;box-shadow:0 4px 0 var(--ink);padding:7px 12px 7px 7px;font:inherit;color:var(--ink);cursor:pointer}
+.advisor .adv-face{width:46px;height:46px;border-radius:50%;background:var(--crumb);border:2px solid var(--ink);display:grid;place-items:center;overflow:hidden}
+.advisor .adv-face svg{width:42px;height:42px;margin-top:4px}
+.advisor .adv-text{font-size:12.5px;font-weight:700;line-height:1.35}
+.advisor.has-go .adv-text::after{content:' Tap to go →';font-weight:900;color:var(--banner)}
+.advisor::before{content:'COMRADE ANT';position:absolute;top:-9px;left:58px;font-size:8.5px;font-weight:900;letter-spacing:.12em;background:var(--banner);color:#fff;border:1.5px solid var(--ink);border-radius:8px;padding:0 6px;line-height:14px}
+.advisor.pop{animation:advpop .38s cubic-bezier(.2,1.4,.5,1)}
+@keyframes advpop{from{transform:translateY(16px) scale(.92);opacity:0}to{transform:none;opacity:1}}
+.app.compact .advisor{display:none}
+/* the FREE SPIN pill on the hill */
+.spin-pill{position:absolute;left:8px;bottom:30px;z-index:2;border:2px solid var(--ink);border-radius:999px;background:var(--crumb);color:var(--ink);font:inherit;font-size:10.5px;font-weight:900;letter-spacing:.08em;padding:4px 11px;box-shadow:0 3px 0 var(--ink);cursor:pointer;animation:spinwob 2.4s ease-in-out infinite}
+.spin-pill::before{content:'';display:inline-block;width:10px;height:10px;margin-right:6px;vertical-align:-1px;border-radius:50%;background:conic-gradient(var(--banner) 0 25%,#fff 0 50%,var(--banner) 0 75%,#fff 0);border:1.5px solid var(--ink)}
+@keyframes spinwob{0%,80%,100%{transform:none}85%{transform:rotate(-6deg) scale(1.06)}92%{transform:rotate(5deg) scale(1.06)}}
+.app:not([data-group="hill"]) .spin-pill,.app.compact .spin-pill,.stage.fighting .spin-pill{display:none}
+/* the Lottery wheel */
+.spinov{z-index:30}
+.spin-wrap{position:relative;width:min(78vw,280px);aspect-ratio:1;margin:4px auto 0}
+#spin-wheel{width:100%;height:100%;display:block;transform-origin:50% 50%;filter:drop-shadow(0 5px 0 rgba(29,26,43,.35))}
+#spin-wheel .sw-top{font-family:var(--f-display);font-size:11px}
+#spin-wheel .sw-sub{font-family:var(--f-body);font-size:7.5px;font-weight:900;letter-spacing:.08em;text-transform:uppercase}
+.spin-pointer{position:absolute;top:-8px;left:50%;transform:translateX(-50%);z-index:2;width:0;height:0;border-left:14px solid transparent;border-right:14px solid transparent;border-top:26px solid var(--ink)}
+.spin-pointer::after{content:'';position:absolute;left:-9px;top:-24px;border-left:9px solid transparent;border-right:9px solid transparent;border-top:17px solid var(--crumb)}
+.spin-hub{position:absolute;inset:0;margin:auto;width:20%;height:20%;border-radius:50%;background:var(--crumb);border:4px solid var(--ink);box-shadow:inset 0 -4px 0 rgba(0,0,0,.15)}
+#spin-msg{text-align:center;font-weight:800;color:var(--ink);min-height:2.9em}
+.srow.lottery{border-color:var(--ink);background:var(--crumb-wash)}
+/* confetti layer and the share button */
+.confetti{position:fixed;inset:0;width:100%;height:100%;z-index:60;pointer-events:none}
+.share-btn{width:100%;background:var(--ink);color:#fff;box-shadow:0 3px 0 #000}
+.mile-ant{width:84px;height:84px;margin:0 auto -4px;border-radius:50%;background:var(--crumb);border:3px solid var(--ink);display:grid;place-items:center;overflow:hidden}
+.mile-ant svg{width:76px;height:76px;margin-top:8px}
+@media (prefers-reduced-motion: reduce){.spin-pill,.advisor.pop{animation:none}}
 </style>
 
 <div class="app">
@@ -1119,6 +1153,8 @@ body{background:var(--paper);background-image:radial-gradient(rgba(29,26,43,.035
     <div class="buffs" id="buffs"></div>
     <div class="season" id="season"></div>
     <div class="hint" id="hint">Tap the hill to gather crumbs</div>
+    <button class="advisor" id="advisor" hidden aria-live="polite"><span class="adv-face"></span><span class="adv-text"></span></button>
+    <button class="spin-pill" id="spinpill" hidden>FREE SPIN</button>
     <div class="fervor" id="fervor" hidden><span class="lbl" id="ferv-lbl">FERVOR ×1.0</span><div class="track"><div id="ferv-fill"></div></div></div>
   </div>
 
@@ -1146,6 +1182,18 @@ body{background:var(--paper);background-image:radial-gradient(rgba(29,26,43,.035
   <div class="op-cards" id="op-cards"></div>
   <div class="op-actions"><button class="btn ghost" id="op-all">Reveal all</button><button class="btn gold" id="op-done" hidden>Collect</button></div>
 </div>
+
+<div class="modal spinov" id="spinov" hidden>
+  <div class="card" role="dialog" aria-modal="true" aria-labelledby="spin-band">
+    <div class="card-band" id="spin-band">The Queen's Lottery</div>
+    <div class="card-body">
+      <div class="spin-wrap"><div class="spin-pointer"></div><svg id="spin-wheel" viewBox="-100 -100 200 200" aria-hidden="true"></svg><div class="spin-hub"></div></div>
+      <p id="spin-msg"></p>
+      <div class="ad-actions"><button class="btn ghost" id="spin-close">Close</button><button class="btn gold" id="spin-btn">Spin</button></div>
+    </div>
+  </div>
+</div>
+<canvas class="confetti" id="confetti" hidden></canvas>
 
 <div class="modal" id="adov" hidden style="z-index:40">
   <div class="card" role="dialog" aria-modal="true" aria-labelledby="ad-band">
@@ -1574,7 +1622,7 @@ function fresh(){
     dir:{day:'', list:[], chest:false, swapped:false, week:'', days:[], weekClaimed:false},
     abyss:{depth:0, torches:5, day:'', extra:0, shards:0, ppity:0, wins:0},
     flags:{seasons:{}}, iap:{owned:{}, first:{}}, ads:{day:'', n:{}, ex:0}, sound:true, started:Date.now(), last:Date.now(),
-    online:freshOnline()};
+    online:freshOnline(), spin:{day:'', used:0, ads:0, total:0, jackpots:0}};
 }
 // Online league: this week's score is kept locally and reported to the server; acct holds one
 // identity per backend ('supabase' for the real game, 'preview' for the claude.ai preview league).
@@ -1653,7 +1701,7 @@ function availableUpgrades(s){ return UPGRADES.filter(u => !s.bought.includes(u.
 function nextLockedUpgrade(s){ return UPGRADES.filter(u => !s.bought.includes(u.id) && !u.unlocked(s)).sort((a,b) => a.cost-b.cost)[0]; }
 
 const PERMA = ['abyss','dir','medals','seenMedals','lifetime','taps','picnics','anteaters','flyers','rubbles','incidents','raids','daily','quotaN','flags','sound','started',
-  'gems','inv','packs','cards','shards','pass','pity','shopDay','tapMerit','crowns','crownsTotal','supers','doctrine','war','hard','online'];
+  'gems','inv','packs','cards','shards','pass','pity','shopDay','tapMerit','crowns','crownsTotal','supers','doctrine','war','hard','online','spin'];
 function resetRun(s, extra){ const k = {}; for (const f of PERMA) k[f] = s[f]; Object.assign(s, fresh(), k, extra); }
 function nuptialFlight(s, force){
   const g = pherGain(s); if (g < 1 && !force) return 0;
@@ -1702,6 +1750,7 @@ function normalize(o){
   s.dir = Object.assign({day:'', list:[], chest:false, swapped:false, week:'', days:[], weekClaimed:false}, s.dir||{});
   s.online = Object.assign(freshOnline(), s.online||{}); s.online.acct = s.online.acct || {};
   s.online.chest = Object.assign({week:'', got:[]}, s.online.chest||{});
+  s.spin = Object.assign({day:'', used:0, ads:0, total:0, jackpots:0}, s.spin||{});
   if (o.ascLife === undefined) s.ascLife = s.lifetime;
   return s;
 }
@@ -1893,6 +1942,7 @@ async function watchFor(k){
   adBusy = false;
   if (!ok) return;
   adDay()[k] = (adDay()[k]||0) + 1;
+  Analytics.ev('ad_reward', {placement: k});
   const r = AD_REWARDS[k];
   if (k === 'amber') addGems(8);
   else if (k === 'boost') addBuff({name:'State Television', prod:2, dur:900, gold:true});
@@ -1940,6 +1990,7 @@ async function buyIAP(sku){
   iapBusy = false;
   if (!ok) return;
   const msg = grantIAP(sku);
+  Analytics.ev('purchase', {sku, price: it.price});
   toast('Thank you, comrade!', msg, 'gold', it.icon || 'gem'); Sound.stamp();
   afterChange(); render();
 }
@@ -2212,6 +2263,7 @@ function cardHTML(c, lv){
 function cardBack(){ return `<div class="cbk"><div class="cbk-r"></div><div class="cbk-d">${icon('ant')}</div><b>FORMIC</b></div>`; }
 let opened = 0, opTotal = 0, cardFilter = 'all';
 function showOpening(res){
+  Analytics.ev('pack_open', {pack: res.pk.name, n: 1});
   $('op-title').textContent = res.pk.name;
   $('op-sub').textContent = 'Tap a card to reveal it';
   $('opening').classList.remove('bulk');
@@ -2225,6 +2277,7 @@ function showOpening(res){
   Sound.alert();
 }
 function showBulk(pk, n, outs){
+  Analytics.ev('pack_open', {pack: pk.name, n});
   const cnt = {C:0, R:0, E:0, L:0, M:0, P:0}, best = {}; let nw = 0, up = 0, amber = 0;
   for (const o of outs){
     cnt[o.c.r]++;
@@ -2251,7 +2304,8 @@ function flipCard(el){
 
 
 function doTap(){
-  const v = D.tapValue * fervMult();
+  lastCrit = D.tapValue > 0 && Math.random() < critChance();
+  const v = D.tapValue * fervMult() * (lastCrit ? CRIT_MULT : 1);
   gain(v); S.taps++;
   fervor = Math.min(1, fervor + 0.05); lastTapAt = performance.now();
   if (fervor >= 1) S.flags.fervor = true;
@@ -2354,6 +2408,7 @@ const GROUP_OF = {castes:'hill', research:'hill', raids:'march', cards:'cards', 
 const lastIn = {hill:'castes', goals:'medals', world:'ranks'};
 function goTab(t, goalsSect){ tab = t; if (t === 'medals' && goalsSect) sect.goals = goalsSect; freshTabs.delete(t); confirmUntil = 0; render(); $('list').scrollTop = 0; }
 function finishTut(){
+  Analytics.ev('tutorial_complete');
   S.inv.rush = (S.inv.rush||0) + 1; S.inv.basket = (S.inv.basket||0) + 1; addGems(25);
   ['pass','medals','flight','ranks'].forEach(t => freshTabs.add(t));
   showModal('Training complete', 'The Bureau is open', 'Pass, Goals, Ranks and the Nuptial Flight are now on the panel. Goals holds three Daily Directives that refresh every day. Ranks is the weekly league: race other colonies and team up with friends in an alliance. Your quotas will vary from here on. You also got +25 amber, a Sugar Rush and a Picnic Basket on your belt.', 'Glory to the hill');
@@ -2398,7 +2453,7 @@ function track(kind, amt){
     const gm = q.gems || (q.jelly ? 10 : 2);
     addGems(gm); merit(40);
     toast(`Quota ${S.quotaN} fulfilled`, `+${fmt(q.reward)} crumbs` + (q.jelly ? ' and +1 royal jelly' : '') + ` · +${gm} amber. The Plan is ahead of schedule.`, q.jelly ? 'jelly' : 'gold', 'scroll');
-    if (q.tut !== undefined){ S.flags.tut = q.tut + 1; if (!tutActive()) finishTut(); }
+    if (q.tut !== undefined){ S.flags.tut = q.tut + 1; Analytics.ev('tutorial_step', {step: q.tut + 1}); if (!tutActive()) finishTut(); }
     const qe = $('quota'); qe.classList.remove('stamped'); void qe.offsetWidth; qe.classList.add('stamped');
     Sound.stamp(); bump();
     genQuota();
@@ -2866,16 +2921,17 @@ const Online = {
       if (kind === 'register'){
         const r = await this.api.register(arg);
         S.online.acct[this.api.kind] = {id:r.id, secret:r.secret || '', name:r.name, sent:0};
+        Analytics.ev('league_join', {backend: this.api.kind});
         this.lastSync = 0; await this.sync(true); this.boardAt = 0; await this.load('players');
         toast('Welcome to the league', `${r.name} is on the board. Earn merit this week to climb.`, 'gold', 'crown'); Sound.good();
       } else if (kind === 'rename'){
         const r = await this.api.rename(a, arg); a.name = r.name; this.boardAt = 0; this.renaming = false; await this.load('players');
         toast('Colony renamed', r.name, 'good', 'scroll');
       } else if (kind === 'create'){
-        const r = await this.api.create(a, arg); this.mine = r.alliance; this.aboardAt = this.boardAt = 0;
+        const r = await this.api.create(a, arg); this.mine = r.alliance; this.aboardAt = this.boardAt = 0; Analytics.ev('alliance_create');
         toast('Alliance founded', `Share the code ${r.alliance.code} with your friends.`, 'gold', 'flag'); Sound.stamp();
       } else if (kind === 'join'){
-        const r = await this.api.join(a, arg); this.mine = r.alliance; this.aboardAt = this.boardAt = 0;
+        const r = await this.api.join(a, arg); this.mine = r.alliance; this.aboardAt = this.boardAt = 0; Analytics.ev('alliance_join');
         toast('Alliance joined', `You march with ${r.alliance.name}. Points you earn from now count toward its war chest.`, 'gold', 'flag'); Sound.good();
       } else if (kind === 'leave'){
         await this.api.leave(a); this.mine = null; this.aboardAt = this.boardAt = 0;
@@ -3003,6 +3059,294 @@ function onlineClick(el){
   else if (k.startsWith('chest:')) Online.claimChest(+k.slice(6));
 }
 
+/* ============================================================
+   FUN & GROWTH: critical taps, the Queen's Lottery, milestone
+   celebrations, Comrade Ant (the advisor), the share card, and
+   anonymous analytics.
+   Marketing intent:
+     · crits and milestones = moment-to-moment excitement
+     · the Lottery = a daily reason to return (and an ad slot)
+     · Comrade Ant = personality + nudges toward unused features
+     · the share card = free word-of-mouth
+     · analytics = learn what players actually do (store builds only)
+   ============================================================ */
+
+/* ---------- critical taps ---------- */
+const CRIT_MULT = 7, CRIT_BASE = .03, CRIT_FERVOR = .06;
+let lastCrit = false;
+function critChance(){ return fervor > .98 ? CRIT_FERVOR : CRIT_BASE; }   // max fervor doubles the odds
+
+/* ---------- the Queen's Lottery (daily wheel) ---------- */
+const SPIN_ADS = 2;   // extra spins per day for watching a broadcast
+// Wheel order alternates big and small prizes so the pointer always passes something exciting.
+const SPIN_PRIZES = [
+  {id:'a15',   w:25, top:'15',      sub:'amber',   icon:'gem',   col:'#FFC738', text:'15 amber',            give:() => addGems(15)},
+  {id:'pk3',   w:6,  top:'Politburo',sub:'pack',   icon:'cards', col:'#8E5BF2', text:'a Politburo Pack',    give:() => { S.packs.epic = (S.packs.epic||0) + 1; }, big:true},
+  {id:'rush',  w:14, top:'2×',      sub:'Rush',    icon:'bolt',  col:'#FFFBF3', text:'2 Sugar Rush',        give:() => { S.inv.rush = (S.inv.rush||0) + 2; }},
+  {id:'jelly', w:10, top:'1',       sub:'jelly',   icon:'drop',  col:'#E5392D', text:'1 royal jelly',       give:() => { S.jelly += 1; }},
+  {id:'pk1',   w:18, top:'Worker',  sub:'pack',    icon:'cards', col:'#FFC738', text:'a Worker Pack',       give:() => { S.packs.common = (S.packs.common||0) + 1; }},
+  {id:'jack',  w:2,  top:'300',     sub:'JACKPOT', icon:'crown', col:'#1D1A2B', text:'the 300 amber JACKPOT', give:() => addGems(300), big:true},
+  {id:'a40',   w:15, top:'40',      sub:'amber',   icon:'gem',   col:'#FFFBF3', text:'40 amber',            give:() => addGems(40)},
+  {id:'pk2',   w:10, top:'Brigade', sub:'pack',    icon:'cards', col:'#E5392D', text:'a Brigade Pack',      give:() => { S.packs.rare = (S.packs.rare||0) + 1; }},
+];
+function spinDay(){ const k = dayKey(Date.now()); if (S.spin.day !== k){ S.spin.day = k; S.spin.used = 0; S.spin.ads = 0; } return S.spin; }
+function spinFree(){ return spinDay().used < 1; }
+function spinAdsLeft(){ return Math.max(0, SPIN_ADS - spinDay().ads); }
+function rollSpin(r){
+  r = r === undefined ? Math.random() : r;
+  let x = r * SPIN_PRIZES.reduce((n, p) => n + p.w, 0);
+  for (let i = 0; i < SPIN_PRIZES.length; i++){ if ((x -= SPIN_PRIZES[i].w) < 0) return i; }
+  return 0;
+}
+function grantSpin(i){
+  const p = SPIN_PRIZES[i]; p.give();
+  S.spin.total++; if (p.id === 'jack') S.spin.jackpots++;
+  merit(20);
+  return p;
+}
+
+/* ---------- milestones ---------- */
+const MILESTONES = [
+  {at:1e6,  name:'One Million Crumbs',     quip:'The larder is full. The Politburo has ordered a bigger larder.'},
+  {at:1e9,  name:'One Billion Crumbs',     quip:'A billion crumbs. Historians will call this "the Great Snack".'},
+  {at:1e12, name:'One Trillion Crumbs',    quip:'The bakery has been notified. The bakery is afraid.'},
+  {at:1e15, name:'One Quadrillion Crumbs', quip:'There are now more crumbs than ants. The plan worked.'},
+  {at:1e18, name:'One Quintillion Crumbs', quip:'Scientists confirm: the planet is now 4% crumb.'},
+  {at:1e21, name:'One Sextillion Crumbs',  quip:'The sun asked to join the colony. Request approved.'},
+  {at:1e24, name:'One Septillion Crumbs',  quip:'Every crumb in the universe belongs to the hill. Glory!'},
+];
+// New field on old saves: count the milestones already passed so nobody gets a pile of celebrations.
+function initMilestones(){ if (typeof S.flags.mile !== 'number') S.flags.mile = MILESTONES.filter(m => S.lifetime >= m.at).length; }
+function nextMilestone(){ const m = MILESTONES[S.flags.mile]; return m && S.lifetime >= m.at ? m : null; }
+
+/* ---------- Comrade Ant, the advisor ---------- */
+const ADVISOR_LINES = [
+  'Reminder: carrying ten times your body weight is a privilege, not a job.',
+  'Tap faster, comrade. The beetles are watching.',
+  'Fun fact: ants never sleep. Neither does the Five-Year Plan.',
+  'The Ministry denies that picnics exist. Grab the sugar cubes anyway.',
+  'An anteater is just a capitalist with a long nose. Tap it!',
+  'Every crumb you gather is a crumb the wasps will never have.',
+  'Our aphids are the happiest aphids. They said so. Under supervision.',
+  'Max fervor doubles your critical taps. Science!',
+  'I have never seen the Queen. I am told this is normal.',
+  'Remember: the trail is the truth.',
+  'Rumour says a Mythic card sleeps in the packs. Rumour is very well informed.',
+  'If you see a winged royal, tap it. Do not ask questions.',
+];
+// Context tips point at features the player is ignoring (the most useful thing an advisor can say).
+function advisorTip(){
+  const tips = [];
+  if (S.spin && spinFree() && !tutActive()) tips.push(['Comrade! Your free spin of the Queen\'s Lottery is waiting in the Shop.', 'shop']);
+  if (raidsReady()) tips.push(['Your raiding squad is back with loot. March → Raids!', 'raids']);
+  if (passClaimable() >= 3) tips.push([`${passClaimable()} pass rewards are waiting to be claimed. Goals → Pass.`, 'pass']);
+  if (Object.values(S.packs).reduce((a, b) => a + b, 0) >= 3) tips.push(['You have unopened card packs. Cards make everything stronger!', 'cards']);
+  if (pherGain(S) >= Math.max(3, S.pher)) tips.push(['A Nuptial Flight now would double your pheromones. Think about it.', 'flight']);
+  if (!tutActive() && !Object.keys(S.online.acct).length) tips.push(['Other colonies are racing in the weekly league. Show them who\'s boss: Ranks!', 'ranks']);
+  return tips.length && Math.random() < .6 ? tips[Math.floor(Math.random() * tips.length)] : [ADVISOR_LINES[Math.floor(Math.random() * ADVISOR_LINES.length)], null];
+}
+// A small vector Comrade Ant (also drawn on the share card). viewBox 0 0 100 100.
+const ANT_FACE = {
+  antL:'M38 26 C30 12 22 8 14 10', antR:'M62 26 C70 12 78 8 86 10',
+  head:'M50 22 C74 22 88 40 86 60 C84 80 68 92 50 92 C32 92 16 80 14 60 C12 40 26 22 50 22 Z',
+  cap:'M18 44 C20 26 34 16 52 16 C70 16 82 26 84 40 C70 34 36 34 18 44 Z',
+  brim:'M60 36 C72 32 88 34 96 42 C86 44 72 44 60 42 Z',
+  eyeL:'M37 58 m-9 0 a9 10 0 1 0 18 0 a9 10 0 1 0 -18 0', eyeR:'M63 58 m-9 0 a9 10 0 1 0 18 0 a9 10 0 1 0 -18 0',
+  pupL:'M39 60 m-4.5 0 a4.5 5 0 1 0 9 0 a4.5 5 0 1 0 -9 0', pupR:'M65 60 m-4.5 0 a4.5 5 0 1 0 9 0 a4.5 5 0 1 0 -9 0',
+  smile:'M38 76 C44 83 56 83 62 76',
+};
+function antFaceSVG(){
+  const F = ANT_FACE, ink = '#1D1A2B';
+  return `<svg viewBox="0 0 100 100" aria-hidden="true"><g fill="none" stroke="${ink}" stroke-width="4" stroke-linecap="round"><path d="${F.antL}"/><path d="${F.antR}"/></g>
+    <circle cx="14" cy="10" r="4" fill="${ink}"/><circle cx="86" cy="10" r="4" fill="${ink}"/>
+    <path d="${F.head}" fill="#8A3F1C" stroke="${ink}" stroke-width="4"/>
+    <path d="${F.cap}" fill="#E5392D" stroke="${ink}" stroke-width="4" stroke-linejoin="round"/><path d="${F.brim}" fill="#B52A20" stroke="${ink}" stroke-width="4" stroke-linejoin="round"/>
+    <path d="${F.eyeL}" fill="#fff" stroke="${ink}" stroke-width="3"/><path d="${F.eyeR}" fill="#fff" stroke="${ink}" stroke-width="3"/>
+    <path d="${F.pupL}" fill="${ink}"/><path d="${F.pupR}" fill="${ink}"/>
+    <path d="${F.smile}" fill="none" stroke="${ink}" stroke-width="4" stroke-linecap="round"/></svg>`;
+}
+
+/* ---------- the share card ---------- */
+// Draws a 1080×1350 poster of the colony (the 4:5 size Instagram and most feeds show in full).
+function drawShareCard(cv){
+  const W = 1080, H = 1350, c = cv.getContext('2d'); cv.width = W; cv.height = H;
+  const INK = '#1D1A2B', RED = '#E5392D', SUN = '#FFC738', PAPER = '#FFFBF3';
+  const DISP = "'Dela Gothic One','Arial Black',Impact,sans-serif", BODY = "'Onest',system-ui,sans-serif";
+  c.fillStyle = '#F7F0E3'; c.fillRect(0, 0, W, H);
+  // sunburst behind the mascot
+  const cx = W / 2, cy = 530;
+  for (let i = 0; i < 24; i++){
+    const a0 = i / 24 * Math.PI * 2, a1 = (i + 1) / 24 * Math.PI * 2;
+    c.fillStyle = i % 2 ? SUN : '#FFE08A';
+    c.beginPath(); c.moveTo(cx, cy); c.arc(cx, cy, 900, a0, a1); c.closePath(); c.fill();
+  }
+  c.fillStyle = RED; c.beginPath(); c.arc(cx, cy, 270, 0, Math.PI * 2); c.fill();
+  // mascot, from the same vector as the advisor
+  c.save(); c.translate(cx - 240, cy - 250); c.scale(4.8, 4.8); c.lineJoin = 'round'; c.lineCap = 'round';
+  const P = d => new Path2D(d), F = ANT_FACE;
+  c.strokeStyle = INK; c.lineWidth = 4; c.stroke(P(F.antL)); c.stroke(P(F.antR));
+  c.fillStyle = INK; c.beginPath(); c.arc(14, 10, 4, 0, 7); c.arc(86, 10, 4, 0, 7); c.fill();
+  [[F.head, '#8A3F1C', 4], [F.cap, RED, 4], [F.brim, '#B52A20', 4], [F.eyeL, '#fff', 3], [F.eyeR, '#fff', 3]].forEach(([d, f, w]) => { c.fillStyle = f; c.fill(P(d)); c.lineWidth = w; c.stroke(P(d)); });
+  c.fillStyle = INK; c.fill(P(F.pupL)); c.fill(P(F.pupR)); c.lineWidth = 4; c.stroke(P(F.smile));
+  c.restore();
+  // title banner
+  c.fillStyle = RED; c.fillRect(0, 60, W, 150); c.fillStyle = INK; c.fillRect(0, 210, W, 10);
+  c.fillStyle = '#fff'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.font = `92px ${DISP}`; c.fillText('FORMIC REPUBLIC', cx, 137);
+  // stats panel
+  const acct = Object.values(S.online.acct)[0], name = acct ? acct.name : 'My Colony';
+  const px = 70, py = 880, pw = W - 140, ph = 400;
+  c.fillStyle = PAPER; c.strokeStyle = INK; c.lineWidth = 8;
+  c.beginPath(); if (c.roundRect) c.roundRect(px, py, pw, ph, 40); else c.rect(px, py, pw, ph); c.fill(); c.stroke();
+  c.fillStyle = INK; c.font = `64px ${DISP}`; c.fillText(name.slice(0, 22), cx, py + 70);
+  c.fillStyle = RED; c.font = `110px ${DISP}`; c.fillText(fmt(D.cps), cx, py + 175);
+  c.fillStyle = '#5E5872'; c.font = `700 34px ${BODY}`; c.fillText('CRUMBS PER SECOND', cx, py + 245);
+  const cards = Object.keys(S.cards).length;
+  c.fillStyle = INK; c.font = `700 36px ${BODY}`;
+  c.fillText(`${fmt(S.lifetime)} crumbs gathered · ${S.flights} flights${S.supers ? ` · ${S.supers} supercolon${S.supers > 1 ? 'ies' : 'y'}` : ''}`, cx, py + 305);
+  c.fillText(`${cards} cards · ${S.medals.length} medals${(S.abyss || {}).depth ? ` · Abyss depth ${S.abyss.depth}` : ''}`, cx, py + 355);
+  // call to action, on an ink pill between the mascot and the stats
+  c.font = `44px ${DISP}`; const tw = c.measureText('Can your colony beat mine?').width + 70;
+  c.fillStyle = INK; c.beginPath(); if (c.roundRect) c.roundRect(cx - tw / 2, 806, tw, 58, 29); else c.rect(cx - tw / 2, 806, tw, 58); c.fill();
+  c.fillStyle = SUN; c.fillText('Can your colony beat mine?', cx, 836);
+}
+async function shareColony(where){
+  try { await Promise.all([document.fonts.load("92px 'Dela Gothic One'"), document.fonts.load("700 34px 'Onest'")]); } catch(e){}   // draw with the poster fonts
+  const cv = document.createElement('canvas'); drawShareCard(cv);
+  const blob = await new Promise(res => cv.toBlob(res, 'image/png'));
+  const text = `My ant colony makes ${fmt(D.cps)} crumbs a second in Formic Republic. Can yours beat it?`;
+  Analytics.ev('share', {where});
+  try {
+    const file = new File([blob], 'formic-republic.png', {type:'image/png'});
+    if (navigator.canShare && navigator.canShare({files:[file]})){ await navigator.share({files:[file], text, title:'Formic Republic'}); return 'shared'; }
+  } catch(e){ if (e && e.name === 'AbortError') return 'cancelled'; }
+  if (hasNative){ const url = await new Promise(res => { const r = new FileReader(); r.onload = () => res(r.result); r.readAsDataURL(blob); }); Native.post('share', {text, image:url}); return 'native'; }
+  try {
+    const dl = window.claude && typeof window.claude.use === 'function' ? await window.claude.use('downloads') : null;
+    if (dl){ await dl.save({filename:'formic-republic.png', data:blob}); return 'saved'; }
+  } catch(e){ if (e && e.code !== 'unavailable') return 'cancelled'; }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'formic-republic.png'; document.body.appendChild(a); a.click(); a.remove();
+  return 'downloaded';
+}
+
+/* ---------- anonymous analytics (PostHog, EU) ----------
+   On in the store builds; off in the browser preview unless FR_PLATFORM.analytics is true.
+   Sends a random install id (no names, no emails); the PostHog project anonymises IPs.
+   Mention it in the store privacy policy. */
+const Analytics = {
+  host:'https://eu.i.posthog.com', key:'phc_teWpivyJJZ48jraYrC7wwgnNFrxbUxALeCLgdoqdkwVY',
+  q:[], last:0,
+  on(){ return PLATFORM.analytics === true || (PLATFORM.id !== 'web' && PLATFORM.analytics !== false); },
+  id(){ if (!S.flags.aid) S.flags.aid = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : 'a' + Date.now().toString(36) + Math.random().toString(36).slice(2); return S.flags.aid; },
+  ev(name, props){
+    if (!S || !this.on()) return;
+    this.q.push({event:name, timestamp:new Date().toISOString(), properties:Object.assign({distinct_id:this.id(), platform:PLATFORM.id, flights:S.flights, supers:S.supers, lifetime_log10: Math.floor(Math.log10(1 + S.lifetime))}, props || {})});
+    if (this.q.length >= 25) this.flush();
+  },
+  flush(){
+    if (!this.q.length) return; const batch = this.q.splice(0); this.last = Date.now();
+    try { fetch(this.host + '/batch/', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({api_key:this.key, batch}), keepalive:true}).catch(() => {}); } catch(e){}
+  },
+};
+
+/* ---------- the Fun controller (called from the main loop) ---------- */
+const Fun = {
+  nextAdvisor: 0, advisorUntil: 0, spinBusy: false, wheelRot: 0,
+  tick(now){
+    if (!S) return;
+    if (now - Analytics.last > 30000) Analytics.flush();
+    // milestones
+    const m = nextMilestone();
+    if (m && $('modal').hidden && $('opening').hidden){ S.flags.mile++; this.celebrate(m); }
+    // Comrade Ant
+    if (this.advisorUntil && now > this.advisorUntil) this.hideAdvisor();
+    if (!this.nextAdvisor) this.nextAdvisor = now + 75000;
+    if (now > this.nextAdvisor && !tutActive() && !activeEvent && !colony.busy() && $('modal').hidden && GROUP_OF[tab] === 'hill'){
+      this.nextAdvisor = now + 150000 + Math.random() * 120000;
+      const [line, go] = advisorTip(); this.say(line, go);
+    }
+  },
+  say(line, go){
+    const el = $('advisor'); if (!el) return;
+    el.querySelector('.adv-text').textContent = line;
+    el.dataset.go = go || ''; el.classList.toggle('has-go', !!go);
+    el.hidden = false; el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop');
+    this.advisorUntil = Date.now() + 7000;
+  },
+  hideAdvisor(){ const el = $('advisor'); if (el) el.hidden = true; this.advisorUntil = 0; },
+  celebrate(m){
+    confetti(); Sound.stamp(); setTimeout(() => Sound.good(), 250); buzz([40, 60, 80]);
+    Analytics.ev('milestone', {at:m.at});
+    showModal('Milestone reached', m.name, `"${m.quip}" Comrade Ant, Ministry of Morale.`, 'Glory to the hill',
+      `<div class="mile-ant">${antFaceSVG()}</div><button class="gbtn big share-btn" data-share="milestone">${icon('up')} Share my colony</button>`);
+  },
+  // ----- the Lottery overlay -----
+  openSpin(){
+    spinDay();
+    const svg = $('spin-wheel'), n = SPIN_PRIZES.length, R = 96, seg = 360 / n;
+    let html = '';
+    SPIN_PRIZES.forEach((p, i) => {
+      const a0 = (i * seg - seg / 2 - 90) * Math.PI / 180, a1 = ((i + 1) * seg - seg / 2 - 90) * Math.PI / 180;
+      const dark = p.col === '#1D1A2B' || p.col === '#8E5BF2' || p.col === '#E5392D';
+      html += `<path d="M0 0 L${(R * Math.cos(a0)).toFixed(2)} ${(R * Math.sin(a0)).toFixed(2)} A${R} ${R} 0 0 1 ${(R * Math.cos(a1)).toFixed(2)} ${(R * Math.sin(a1)).toFixed(2)} Z" fill="${p.col}" stroke="#1D1A2B" stroke-width="2"/>`;
+      html += `<g transform="rotate(${i * seg}) translate(0 -64)"><text text-anchor="middle" y="0" class="sw-top" fill="${dark ? '#fff' : '#1D1A2B'}">${p.top}</text><text text-anchor="middle" y="12" class="sw-sub" fill="${dark ? '#FFC738' : '#5E5872'}">${p.sub}</text></g>`;
+    });
+    html += `<circle r="${R}" fill="none" stroke="#1D1A2B" stroke-width="5"/>`;
+    svg.innerHTML = html; svg.style.transition = 'none'; svg.style.transform = `rotate(${this.wheelRot}deg)`;
+    this.spinUI(); $('spinov').hidden = false;
+    Analytics.ev('spin_open');
+  },
+  spinUI(msg){
+    const free = spinFree(), ads = spinAdsLeft(), b = $('spin-btn');
+    b.disabled = this.spinBusy || (!free && !ads);
+    b.innerHTML = free ? 'Free spin!' : ads ? `${adFree() ? '' : icon('play')}Spin again (${ads} left)` : 'Come back tomorrow';
+    $('spin-msg').textContent = msg || (free ? 'One free spin every day. The jackpot is 300 amber!' : ads ? `Watch a broadcast for another spin. ${ads} left today.` : 'The wheel rests until tomorrow. Long live the Queen!');
+  },
+  async spin(){
+    if (this.spinBusy) return;
+    const st = spinDay();
+    if (st.used < 1) st.used++;
+    else if (spinAdsLeft() > 0){
+      this.spinBusy = true; this.spinUI();
+      const ok = adFree() ? true : await Monetize.showRewarded('spin');
+      this.spinBusy = false;
+      if (!ok){ this.spinUI(); return; }
+      st.ads++;
+    } else return;
+    this.spinBusy = true; save();
+    const i = rollSpin(), seg = 360 / SPIN_PRIZES.length;
+    const jitter = (Math.random() - .5) * seg * .6;
+    const target = this.wheelRot - (this.wheelRot % 360) + 360 * 5 + (360 - i * seg) + jitter;
+    this.wheelRot = target;
+    const svg = $('spin-wheel');
+    svg.style.transition = matchMedia('(prefers-reduced-motion: reduce)').matches ? 'none' : 'transform 4.2s cubic-bezier(.12,.75,.15,1)';
+    svg.style.transform = `rotate(${target}deg)`;
+    this.spinUI('Spinning…'); Sound.alert();
+    await new Promise(r => setTimeout(r, matchMedia('(prefers-reduced-motion: reduce)').matches ? 200 : 4300));
+    const p = grantSpin(i);
+    this.spinBusy = false;
+    if (p.big){ confetti(); Sound.reveal(p.id === 'jack' ? 'M' : 'E'); buzz([40, 60, 120]); } else Sound.good();
+    toast(p.id === 'jack' ? 'JACKPOT!' : 'The Queen smiles on you', `You won ${p.text}!`, p.big ? 'jelly' : 'gold', p.icon);
+    Analytics.ev('spin', {prize:p.id});
+    afterChange(); this.spinUI(`You won ${p.text}!`);
+  },
+};
+
+/* ---------- confetti ---------- */
+function confetti(){
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const cv = $('confetti'); if (!cv) return;
+  const ctx = cv.getContext('2d'), W = cv.width = innerWidth, H = cv.height = innerHeight;
+  const cols = ['#E5392D', '#FFC738', '#2FA862', '#8E5BF2', '#1D1A2B', '#FFFBF3'];
+  const ps = Array.from({length:140}, () => ({x:W / 2 + (Math.random() - .5) * W * .3, y:H * .35, vx:(Math.random() - .5) * 900, vy:-Math.random() * 900 - 200, r:Math.random() * 6, vr:(Math.random() - .5) * 12, w:6 + Math.random() * 6, h:8 + Math.random() * 8, c:cols[Math.floor(Math.random() * cols.length)]}));
+  cv.hidden = false; let last = performance.now(); const end = last + 2600;
+  (function step(t){
+    const dt = Math.min(.04, (t - last) / 1000); last = t;
+    ctx.clearRect(0, 0, W, H);
+    for (const p of ps){ p.vy += 1400 * dt; p.vx *= .99; p.x += p.vx * dt; p.y += p.vy * dt; p.r += p.vr * dt;
+      ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.r); ctx.fillStyle = p.c; ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h); ctx.restore(); }
+    if (t < end) requestAnimationFrame(step); else { ctx.clearRect(0, 0, W, H); cv.hidden = true; }
+  })(last);
+}
 /* ---------- daily Party Congress ---------- */
 function dayKey(t){ const d = new Date(t); return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`; }
 function checkDaily(){
@@ -3386,6 +3730,7 @@ function render(){
     if (sold('party')) html += `<div class="srow"><div class="si" style="color:var(--banner)">${icon('star')}</div><div class="row-main"><div class="row-name">${IAP.party.name}</div><div class="row-sub">${IAP.party.desc}</div></div><button class="gbtn cash" data-iap="party" ${party ? 'disabled' : ''}>${party ? 'OWNED' : IAP.party.price}</button></div>`;
     if (!S.pass.premium && sold('pass')) html += `<div class="srow"><div class="si" style="color:var(--gem)">${icon('ticket')}</div><div class="row-main"><div class="row-name">${IAP.pass.name}</div><div class="row-sub">${IAP.pass.desc}</div></div><button class="gbtn cash" data-iap="pass">${IAP.pass.price}</button></div>`;
     html += `<div class="shop-sec">Free rewards</div>`;
+    html += `<div class="srow lottery"><div class="si" style="color:var(--banner)">${icon('crown')}</div><div class="row-main"><div class="row-name">The Queen's Lottery</div><div class="row-sub">One free spin every day, two more for broadcasts. Jackpot: 300 amber.</div></div><button class="gbtn ${spinFree() ? 'free' : ''}" data-spin>${spinFree() ? 'FREE SPIN' : 'Spin'}</button></div>`;
     html += `<div class="srow"><div class="si" style="color:var(--leaf)">${icon('gift')}</div><div class="row-main"><div class="row-name">Daily Ration</div><div class="row-sub">A free Worker Pack, once a day.</div></div><button class="gbtn free" data-shop="ration"></button></div>`;
     html += Object.entries(AD_REWARDS).map(([k,r]) => { const left = adLeft(k);
       return `<div class="srow"><div class="si" style="color:var(--leaf)">${icon(r.icon)}</div><div class="row-main"><div class="row-name">${r.name}</div><div class="row-sub">${r.desc} \u00b7 ${left} of ${r.cap} left today</div></div><button class="gbtn ad" data-ad="${k}" ${left ? '' : 'disabled'}>${left ? (claimLbl ? 'Claim' : icon('play') + 'Watch') : 'Tomorrow'}</button></div>`; }).join('');
@@ -3456,6 +3801,7 @@ function render(){
         <dt>Quotas fulfilled</dt><dd id="f-quota" data-l="Quotas fulfilled"></dd>
         <dt>Congress streak (best)</dt><dd id="f-streak" data-l="Congress streak (best)"></dd>
       </dl>
+      <button class="gbtn big share-btn" data-share="record">${icon('up')} Share my colony</button>
       <button class="btn ghost" id="f-wipe"></button>
       ${privacyLinks()}
     </div>`;
@@ -3507,12 +3853,13 @@ function refresh(){
     $('quota').classList.toggle('tut', q.tut !== undefined);
   }
   $('gempill').hidden = !tabShown('shop');
+  $('spinpill').hidden = !(tabShown('shop') && !tutActive() && spinFree());
 
   const a = countAffordable();
   const rr = raidsReady(), np = Object.values(S.packs).reduce((x,y) => x+y, 0), pcl = passClaimable();
   const newMedals = S.medals.length - (S.seenMedals||0), dc = dirClaimable();
   const B = {castes: a.c ? [a.c,''] : null, research: a.r ? [a.r,''] : null, raids: rr ? [rr,'go'] : null, cards: np ? [np,''] : null,
-    pass: pcl ? [pcl,'red'] : null, shop: S.shopDay !== dayKey(now) ? [1,'go'] : null,
+    pass: pcl ? [pcl,'red'] : null, shop: (S.shopDay !== dayKey(now) || spinFree()) ? [(S.shopDay !== dayKey(now) ? 1 : 0) + (spinFree() ? 1 : 0),'go'] : null,
     medals: dc ? [dc,''] : newMedals > 0 && !(tab === 'medals' && sect.goals === 'medals') ? [newMedals,'red'] : null,
     alliance: Online.chestReady() ? [Online.chestReady(),'go'] : null};
   const bHTML = b => b ? `<span class="badge ${b[1]}">${b[0]}</span>` : '';
@@ -3724,6 +4071,8 @@ function checkMedals(){
 }
 
 function onPanelClick(e){
+  if (e.target.closest('[data-spin]')){ Fun.openSpin(); return; }
+  const shb = e.target.closest('[data-share]'); if (shb){ shareColony(shb.dataset.share); return; }
   const onb = e.target.closest('[data-on]');
   if (onb){ if (!onb.disabled) onlineClick(onb); return; }
   const sc = e.target.closest('[data-sect]');
@@ -3747,7 +4096,7 @@ function onPanelClick(e){
   if (dc){ if (buyDoctrine(dc.dataset.doc)){ const d = DOCTRINE.find(x => x.id === dc.dataset.doc); toast('Doctrine adopted', `${d.name} is now law of the Supercolony.`, 'medal', 'crown'); Sound.stamp(); afterChange(); } return; }
   if (e.target.closest('#s-btn')){
     if (Date.now() < superConfirm){
-      const g = supercolony(S); superConfirm = 0;
+      const g = supercolony(S); superConfirm = 0; if (g) Analytics.ev('supercolony', {crowns: g});
       if (g){ D = derive(S); genQuota(); save(); colony.rebuild(); colony.reset(); fervor = 0;
         if (S.supers === 1) showModal('The seal breaks', 'The Abyss opens', 'Beneath the new Supercolony, the ground has split. Raids → Abyss: fight the guardians of each depth for Abyssal Shards and the six Primordial cards.', 'Descend soon');
         showModal('The Supercolony is born', `+${g} crown${g>1?'s':''}`, `Every hill is now one. You have ${S.crowns} crowns to spend on Hive Doctrine, and every crown ever earned adds +5% to all output.`, 'Begin the new era');
@@ -3833,7 +4182,7 @@ function onPanelClick(e){
   }
   if (e.target.id === 'f-btn'){
     if (Date.now() < confirmUntil){
-      const g = nuptialFlight(S); confirmUntil = 0;
+      const g = nuptialFlight(S); confirmUntil = 0; if (g) Analytics.ev('nuptial_flight', {pheromones: g});
       if (g){ D = derive(S); genQuota(); save(); colony.rebuild(); colony.reset(); fervor = 0;
         showModal('A new colony is founded', '+' + fmt(g) + ' pheromones', `Every caste now works ${fmt(S.pher*pherRate(S)*100)}% harder, and you have ${fmt(S.jelly)} royal jelly to spend on edicts.`, 'Begin again');
         offerStarterKit();
@@ -4258,7 +4607,12 @@ const colony = (() => {
     }
     const v = hooks.tap();
     queenPulse = 1;
-    floats.push({x: x + (Math.random()-.5)*16, y: y - 8, text:'+' + fmt(v, true), life:1});
+    if (lastCrit){   // critical tap: big red number, a bigger burst and a little shake
+      floats.push({x: clampX(x), y: y - 14, text:'CRIT! +' + fmt(v, true), life:1.3, big:true, color:'#E5392D'});
+      burst(x, y, reduce ? 6 : 22, '#E5392D'); burst(x, y, reduce ? 0 : 12, COL.crumb);
+      if (!reduce) try { stage.animate([{transform:'translate(0,0)'},{transform:'translate(-4px,2px)'},{transform:'translate(4px,-2px)'},{transform:'translate(0,0)'}], {duration:180}); } catch(e){}
+      Sound.reveal('E'); buzz([15, 30, 25]);
+    } else floats.push({x: x + (Math.random()-.5)*16, y: y - 8, text:'+' + fmt(v, true), life:1});
     burst(x, y, reduce ? 3 : 7);
     if (floats.length > 30) floats.shift();
   }
@@ -4347,7 +4701,7 @@ function loop(t){
       fireEvent();
     }
     checkMedals(); checkDirectives();
-    checkHardship(); automate(t); checkPassSeason();
+    checkHardship(); automate(t); checkPassSeason(); Fun.tick(now);
     Online.tick(now);
     refresh();
   }
@@ -4366,6 +4720,9 @@ function start(data){
   render();
   colony.resize();
   checkDaily();
+  initMilestones();
+  $('advisor').querySelector('.adv-face').innerHTML = antFaceSVG();
+  Analytics.ev('session_start', {tut: tutStep(), gems: Math.floor(S.gems), pass_premium: !!S.pass.premium});
   if (!S.flags.v4){
     S.flags.v4 = true; S.gems += 50; S.packs.common = (S.packs.common||0) + 1;
     S.inv.rush = (S.inv.rush||0) + 1; S.inv.basket = (S.inv.basket||0) + 1;
@@ -4392,6 +4749,7 @@ function start(data){
   $('flightbtn').addEventListener('click', () => goTab('flight'));
   $('subbar').addEventListener('click', onPanelClick);
   $('m-extra').addEventListener('click', async e => {
+    const sh = e.target.closest('[data-share]'); if (sh){ shareColony(sh.dataset.share); return; }
     const b = e.target.closest('#m-ad2'); if (b && !b.disabled){ doubleOffline(b); return; }
     if (e.target.closest('#m-kit')){ await buyIAP('starter'); if (S.iap.owned.starter) $('m-ok').click(); }
   });
@@ -4418,7 +4776,13 @@ function start(data){
   $('sh-a').addEventListener('click', () => resolveEvent('a'));
   $('sh-b').addEventListener('click', () => resolveEvent('b'));
   $('snd').addEventListener('click', () => { S.sound = !S.sound; save(); refresh(); if (S.sound) Sound.buy(); });
-  document.addEventListener('visibilitychange', () => { if (document.hidden) save(true); });
+  document.addEventListener('visibilitychange', () => { if (document.hidden){ save(true); Analytics.flush(); } });
+  $('spinpill').addEventListener('click', e => { e.stopPropagation(); Fun.openSpin(); });
+  $('spinpill').addEventListener('pointerdown', e => e.stopPropagation());
+  $('advisor').addEventListener('pointerdown', e => e.stopPropagation());
+  $('advisor').addEventListener('click', e => { e.stopPropagation(); const go = $('advisor').dataset.go; Fun.hideAdvisor(); if (go === 'pass'){ goTab('pass'); } else if (go === 'ranks'){ goTab('ranks'); } else if (go === 'shop'){ goTab('shop'); } else if (go){ goTab(go); } });
+  $('spin-btn').addEventListener('click', () => Fun.spin());
+  $('spin-close').addEventListener('click', () => { if (!Fun.spinBusy){ $('spinov').hidden = true; refresh(); } });
   addEventListener('pagehide', () => save(true));
   Native.post('ready', {});                                    // shell answers with local store prices
   if (PLATFORM.achievements) S.medals.forEach(id => Monetize.achievement(id));   // re-sync medals earned earlier

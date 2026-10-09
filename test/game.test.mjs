@@ -157,3 +157,64 @@ test('wiping the save keeps the league identity and this week\'s league points',
   assert.equal(g.S.online.score, 10, 'the server already counted them');
   assert.equal(g.S.crumbs, 0);
 });
+
+test('Lottery: prize odds follow the weights and the jackpot is rare', () => {
+  const g = loadGame(); g.newGame();
+  const prizes = g.run('SPIN_PRIZES.map(p => ({id: p.id, w: p.w}))'), total = prizes.reduce((n, p) => n + p.w, 0);
+  assert.equal(total, 100, 'weights are percentages');
+  assert.equal(prizes.find(p => p.id === 'jack').w, 2);
+  // walking r from 0 to 1 visits every prize in wheel order, each for exactly its weight
+  const counts = {}; for (let i = 0; i < 10000; i++){ const k = g.run(`SPIN_PRIZES[rollSpin(${(i + .5) / 10000})].id`); counts[k] = (counts[k] || 0) + 1; }
+  for (const p of prizes) assert.equal(counts[p.id], p.w * 100, p.id);
+});
+
+test('Lottery: one free spin a day, and every prize is paid out', () => {
+  const g = loadGame(); g.newGame();
+  assert.equal(g.run('spinFree()'), true);
+  g.run('S.spin.used = 1');
+  assert.equal(g.run('spinFree()'), false);
+  assert.equal(g.run('spinAdsLeft()'), 2);
+  g.run(`S.spin.day = '1999-1-1'`);   // a new day resets it
+  assert.equal(g.run('spinFree()'), true);
+  const before = { gems: g.S.gems, jelly: g.S.jelly };
+  g.run('SPIN_PRIZES.forEach((p, i) => grantSpin(i))');
+  const s = g.S;
+  assert.equal(s.gems - before.gems, 15 + 300 + 40);
+  assert.equal(s.jelly - before.jelly, 1);
+  assert.equal(s.packs.common, 1); assert.equal(s.packs.rare, 1); assert.equal(s.packs.epic, 1);
+  assert.equal(s.inv.rush, 2);
+  assert.equal(s.spin.total, 8); assert.equal(s.spin.jackpots, 1);
+});
+
+test('critical taps: 3% normally, 6% at max fervor, ×7 value', () => {
+  const g = loadGame(); g.newGame();
+  assert.equal(g.run('fervor = 0; critChance()'), 0.03);
+  assert.equal(g.run('fervor = 1; critChance()'), 0.06);
+  g.run('fervor = 0; Math.random = () => 0.01;');
+  const crit = g.run('doTap()'); assert.equal(g.run('lastCrit'), true);
+  g.run('fervor = 0; Math.random = () => 0.99;');   // same fervor as the first tap
+  const normal = g.run('doTap()'); assert.equal(g.run('lastCrit'), false);
+  near(crit / normal, 7);
+});
+
+test('milestones: old saves start past what they already reached; new ones trigger once', () => {
+  const g = loadGame(); g.newGame({ lifetime: 5e9 });
+  g.run('initMilestones()');
+  assert.equal(g.S.flags.mile, 2, '1M and 1B already passed: no celebrations for them');
+  assert.equal(g.run('nextMilestone()'), null);
+  g.run('S.lifetime = 2e12');
+  assert.equal(g.run('nextMilestone().name'), 'One Trillion Crumbs');
+});
+
+test('analytics stay off in the browser preview and on in store builds', () => {
+  const g = loadGame(); g.newGame();
+  assert.equal(g.run('Analytics.on()'), false);
+  g.run(`PLATFORM.id = 'android'`); assert.equal(g.run('Analytics.on()'), true);
+  g.run(`PLATFORM.analytics = false`); assert.equal(g.run('Analytics.on()'), false);
+});
+
+test('the Lottery and its history survive a Nuptial Flight', () => {
+  const g = loadGame(); g.newGame({ ascLife: 8e9 });
+  g.run(`S.spin = {day:'2026-10-9', used:1, ads:1, total:5, jackpots:1}; nuptialFlight(S);`);
+  assert.equal(g.S.spin.total, 5); assert.equal(g.S.spin.used, 1);
+});

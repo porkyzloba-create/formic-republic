@@ -394,7 +394,12 @@ const colony = (() => {
     }
     const v = hooks.tap();
     queenPulse = 1;
-    floats.push({x: x + (Math.random()-.5)*16, y: y - 8, text:'+' + fmt(v, true), life:1});
+    if (lastCrit){   // critical tap: big red number, a bigger burst and a little shake
+      floats.push({x: clampX(x), y: y - 14, text:'CRIT! +' + fmt(v, true), life:1.3, big:true, color:'#E5392D'});
+      burst(x, y, reduce ? 6 : 22, '#E5392D'); burst(x, y, reduce ? 0 : 12, COL.crumb);
+      if (!reduce) try { stage.animate([{transform:'translate(0,0)'},{transform:'translate(-4px,2px)'},{transform:'translate(4px,-2px)'},{transform:'translate(0,0)'}], {duration:180}); } catch(e){}
+      Sound.reveal('E'); buzz([15, 30, 25]);
+    } else floats.push({x: x + (Math.random()-.5)*16, y: y - 8, text:'+' + fmt(v, true), life:1});
     burst(x, y, reduce ? 3 : 7);
     if (floats.length > 30) floats.shift();
   }

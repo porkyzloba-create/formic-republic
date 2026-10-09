@@ -256,16 +256,17 @@ const Online = {
       if (kind === 'register'){
         const r = await this.api.register(arg);
         S.online.acct[this.api.kind] = {id:r.id, secret:r.secret || '', name:r.name, sent:0};
+        Analytics.ev('league_join', {backend: this.api.kind});
         this.lastSync = 0; await this.sync(true); this.boardAt = 0; await this.load('players');
         toast('Welcome to the league', `${r.name} is on the board. Earn merit this week to climb.`, 'gold', 'crown'); Sound.good();
       } else if (kind === 'rename'){
         const r = await this.api.rename(a, arg); a.name = r.name; this.boardAt = 0; this.renaming = false; await this.load('players');
         toast('Colony renamed', r.name, 'good', 'scroll');
       } else if (kind === 'create'){
-        const r = await this.api.create(a, arg); this.mine = r.alliance; this.aboardAt = this.boardAt = 0;
+        const r = await this.api.create(a, arg); this.mine = r.alliance; this.aboardAt = this.boardAt = 0; Analytics.ev('alliance_create');
         toast('Alliance founded', `Share the code ${r.alliance.code} with your friends.`, 'gold', 'flag'); Sound.stamp();
       } else if (kind === 'join'){
-        const r = await this.api.join(a, arg); this.mine = r.alliance; this.aboardAt = this.boardAt = 0;
+        const r = await this.api.join(a, arg); this.mine = r.alliance; this.aboardAt = this.boardAt = 0; Analytics.ev('alliance_join');
         toast('Alliance joined', `You march with ${r.alliance.name}. Points you earn from now count toward its war chest.`, 'gold', 'flag'); Sound.good();
       } else if (kind === 'leave'){
         await this.api.leave(a); this.mine = null; this.aboardAt = this.boardAt = 0;

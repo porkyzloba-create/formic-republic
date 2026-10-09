@@ -58,6 +58,7 @@ Scripts, in load order:
 | `65-abyss.js` | the Abyss (after the first Supercolony) |
 | `70-directives.js` | Daily Directives |
 | `75-online.js` | weekly league + alliances (Supabase API, preview fallback, UI) |
+| `77-fun.js` | critical taps, the Queen's Lottery, milestones, Comrade Ant, the share card, analytics |
 | `80-daily-events.js` | Party Congress streak, random incidents |
 | `85-sound.js` | sound effects and haptics |
 | `90-ui.js` | rendering of every tab, click handling, modals, the hill strip on scroll |

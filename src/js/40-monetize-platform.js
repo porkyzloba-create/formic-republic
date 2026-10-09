@@ -137,6 +137,7 @@ async function watchFor(k){
   adBusy = false;
   if (!ok) return;
   adDay()[k] = (adDay()[k]||0) + 1;
+  Analytics.ev('ad_reward', {placement: k});
   const r = AD_REWARDS[k];
   if (k === 'amber') addGems(8);
   else if (k === 'boost') addBuff({name:'State Television', prod:2, dur:900, gold:true});
@@ -184,6 +185,7 @@ async function buyIAP(sku){
   iapBusy = false;
   if (!ok) return;
   const msg = grantIAP(sku);
+  Analytics.ev('purchase', {sku, price: it.price});
   toast('Thank you, comrade!', msg, 'gold', it.icon || 'gem'); Sound.stamp();
   afterChange(); render();
 }

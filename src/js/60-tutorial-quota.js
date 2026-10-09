@@ -42,6 +42,7 @@ const GROUP_OF = {castes:'hill', research:'hill', raids:'march', cards:'cards', 
 const lastIn = {hill:'castes', goals:'medals', world:'ranks'};
 function goTab(t, goalsSect){ tab = t; if (t === 'medals' && goalsSect) sect.goals = goalsSect; freshTabs.delete(t); confirmUntil = 0; render(); $('list').scrollTop = 0; }
 function finishTut(){
+  Analytics.ev('tutorial_complete');
   S.inv.rush = (S.inv.rush||0) + 1; S.inv.basket = (S.inv.basket||0) + 1; addGems(25);
   ['pass','medals','flight','ranks'].forEach(t => freshTabs.add(t));
   showModal('Training complete', 'The Bureau is open', 'Pass, Goals, Ranks and the Nuptial Flight are now on the panel. Goals holds three Daily Directives that refresh every day. Ranks is the weekly league: race other colonies and team up with friends in an alliance. Your quotas will vary from here on. You also got +25 amber, a Sugar Rush and a Picnic Basket on your belt.', 'Glory to the hill');
@@ -86,7 +87,7 @@ function track(kind, amt){
     const gm = q.gems || (q.jelly ? 10 : 2);
     addGems(gm); merit(40);
     toast(`Quota ${S.quotaN} fulfilled`, `+${fmt(q.reward)} crumbs` + (q.jelly ? ' and +1 royal jelly' : '') + ` · +${gm} amber. The Plan is ahead of schedule.`, q.jelly ? 'jelly' : 'gold', 'scroll');
-    if (q.tut !== undefined){ S.flags.tut = q.tut + 1; if (!tutActive()) finishTut(); }
+    if (q.tut !== undefined){ S.flags.tut = q.tut + 1; Analytics.ev('tutorial_step', {step: q.tut + 1}); if (!tutActive()) finishTut(); }
     const qe = $('quota'); qe.classList.remove('stamped'); void qe.offsetWidth; qe.classList.add('stamped');
     Sound.stamp(); bump();
     genQuota();

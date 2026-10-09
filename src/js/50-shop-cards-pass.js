@@ -256,6 +256,7 @@ function cardHTML(c, lv){
 function cardBack(){ return `<div class="cbk"><div class="cbk-r"></div><div class="cbk-d">${icon('ant')}</div><b>FORMIC</b></div>`; }
 let opened = 0, opTotal = 0, cardFilter = 'all';
 function showOpening(res){
+  Analytics.ev('pack_open', {pack: res.pk.name, n: 1});
   $('op-title').textContent = res.pk.name;
   $('op-sub').textContent = 'Tap a card to reveal it';
   $('opening').classList.remove('bulk');
@@ -269,6 +270,7 @@ function showOpening(res){
   Sound.alert();
 }
 function showBulk(pk, n, outs){
+  Analytics.ev('pack_open', {pack: pk.name, n});
   const cnt = {C:0, R:0, E:0, L:0, M:0, P:0}, best = {}; let nw = 0, up = 0, amber = 0;
   for (const o of outs){
     cnt[o.c.r]++;
@@ -295,7 +297,8 @@ function flipCard(el){
 
 
 function doTap(){
-  const v = D.tapValue * fervMult();
+  lastCrit = D.tapValue > 0 && Math.random() < critChance();
+  const v = D.tapValue * fervMult() * (lastCrit ? CRIT_MULT : 1);
   gain(v); S.taps++;
   fervor = Math.min(1, fervor + 0.05); lastTapAt = performance.now();
   if (fervor >= 1) S.flags.fervor = true;

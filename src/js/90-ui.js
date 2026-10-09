@@ -204,6 +204,7 @@ function render(){
     if (sold('party')) html += `<div class="srow"><div class="si" style="color:var(--banner)">${icon('star')}</div><div class="row-main"><div class="row-name">${IAP.party.name}</div><div class="row-sub">${IAP.party.desc}</div></div><button class="gbtn cash" data-iap="party" ${party ? 'disabled' : ''}>${party ? 'OWNED' : IAP.party.price}</button></div>`;
     if (!S.pass.premium && sold('pass')) html += `<div class="srow"><div class="si" style="color:var(--gem)">${icon('ticket')}</div><div class="row-main"><div class="row-name">${IAP.pass.name}</div><div class="row-sub">${IAP.pass.desc}</div></div><button class="gbtn cash" data-iap="pass">${IAP.pass.price}</button></div>`;
     html += `<div class="shop-sec">Free rewards</div>`;
+    html += `<div class="srow lottery"><div class="si" style="color:var(--banner)">${icon('crown')}</div><div class="row-main"><div class="row-name">The Queen's Lottery</div><div class="row-sub">One free spin every day, two more for broadcasts. Jackpot: 300 amber.</div></div><button class="gbtn ${spinFree() ? 'free' : ''}" data-spin>${spinFree() ? 'FREE SPIN' : 'Spin'}</button></div>`;
     html += `<div class="srow"><div class="si" style="color:var(--leaf)">${icon('gift')}</div><div class="row-main"><div class="row-name">Daily Ration</div><div class="row-sub">A free Worker Pack, once a day.</div></div><button class="gbtn free" data-shop="ration"></button></div>`;
     html += Object.entries(AD_REWARDS).map(([k,r]) => { const left = adLeft(k);
       return `<div class="srow"><div class="si" style="color:var(--leaf)">${icon(r.icon)}</div><div class="row-main"><div class="row-name">${r.name}</div><div class="row-sub">${r.desc} \u00b7 ${left} of ${r.cap} left today</div></div><button class="gbtn ad" data-ad="${k}" ${left ? '' : 'disabled'}>${left ? (claimLbl ? 'Claim' : icon('play') + 'Watch') : 'Tomorrow'}</button></div>`; }).join('');
@@ -274,6 +275,7 @@ function render(){
         <dt>Quotas fulfilled</dt><dd id="f-quota" data-l="Quotas fulfilled"></dd>
         <dt>Congress streak (best)</dt><dd id="f-streak" data-l="Congress streak (best)"></dd>
       </dl>
+      <button class="gbtn big share-btn" data-share="record">${icon('up')} Share my colony</button>
       <button class="btn ghost" id="f-wipe"></button>
       ${privacyLinks()}
     </div>`;
@@ -325,12 +327,13 @@ function refresh(){
     $('quota').classList.toggle('tut', q.tut !== undefined);
   }
   $('gempill').hidden = !tabShown('shop');
+  $('spinpill').hidden = !(tabShown('shop') && !tutActive() && spinFree());
 
   const a = countAffordable();
   const rr = raidsReady(), np = Object.values(S.packs).reduce((x,y) => x+y, 0), pcl = passClaimable();
   const newMedals = S.medals.length - (S.seenMedals||0), dc = dirClaimable();
   const B = {castes: a.c ? [a.c,''] : null, research: a.r ? [a.r,''] : null, raids: rr ? [rr,'go'] : null, cards: np ? [np,''] : null,
-    pass: pcl ? [pcl,'red'] : null, shop: S.shopDay !== dayKey(now) ? [1,'go'] : null,
+    pass: pcl ? [pcl,'red'] : null, shop: (S.shopDay !== dayKey(now) || spinFree()) ? [(S.shopDay !== dayKey(now) ? 1 : 0) + (spinFree() ? 1 : 0),'go'] : null,
     medals: dc ? [dc,''] : newMedals > 0 && !(tab === 'medals' && sect.goals === 'medals') ? [newMedals,'red'] : null,
     alliance: Online.chestReady() ? [Online.chestReady(),'go'] : null};
   const bHTML = b => b ? `<span class="badge ${b[1]}">${b[0]}</span>` : '';
@@ -542,6 +545,8 @@ function checkMedals(){
 }
 
 function onPanelClick(e){
+  if (e.target.closest('[data-spin]')){ Fun.openSpin(); return; }
+  const shb = e.target.closest('[data-share]'); if (shb){ shareColony(shb.dataset.share); return; }
   const onb = e.target.closest('[data-on]');
   if (onb){ if (!onb.disabled) onlineClick(onb); return; }
   const sc = e.target.closest('[data-sect]');
@@ -565,7 +570,7 @@ function onPanelClick(e){
   if (dc){ if (buyDoctrine(dc.dataset.doc)){ const d = DOCTRINE.find(x => x.id === dc.dataset.doc); toast('Doctrine adopted', `${d.name} is now law of the Supercolony.`, 'medal', 'crown'); Sound.stamp(); afterChange(); } return; }
   if (e.target.closest('#s-btn')){
     if (Date.now() < superConfirm){
-      const g = supercolony(S); superConfirm = 0;
+      const g = supercolony(S); superConfirm = 0; if (g) Analytics.ev('supercolony', {crowns: g});
       if (g){ D = derive(S); genQuota(); save(); colony.rebuild(); colony.reset(); fervor = 0;
         if (S.supers === 1) showModal('The seal breaks', 'The Abyss opens', 'Beneath the new Supercolony, the ground has split. Raids → Abyss: fight the guardians of each depth for Abyssal Shards and the six Primordial cards.', 'Descend soon');
         showModal('The Supercolony is born', `+${g} crown${g>1?'s':''}`, `Every hill is now one. You have ${S.crowns} crowns to spend on Hive Doctrine, and every crown ever earned adds +5% to all output.`, 'Begin the new era');
@@ -651,7 +656,7 @@ function onPanelClick(e){
   }
   if (e.target.id === 'f-btn'){
     if (Date.now() < confirmUntil){
-      const g = nuptialFlight(S); confirmUntil = 0;
+      const g = nuptialFlight(S); confirmUntil = 0; if (g) Analytics.ev('nuptial_flight', {pheromones: g});
       if (g){ D = derive(S); genQuota(); save(); colony.rebuild(); colony.reset(); fervor = 0;
         showModal('A new colony is founded', '+' + fmt(g) + ' pheromones', `Every caste now works ${fmt(S.pher*pherRate(S)*100)}% harder, and you have ${fmt(S.jelly)} royal jelly to spend on edicts.`, 'Begin again');
         offerStarterKit();

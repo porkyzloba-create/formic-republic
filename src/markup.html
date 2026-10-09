@@ -36,6 +36,8 @@
     <div class="buffs" id="buffs"></div>
     <div class="season" id="season"></div>
     <div class="hint" id="hint">Tap the hill to gather crumbs</div>
+    <button class="advisor" id="advisor" hidden aria-live="polite"><span class="adv-face"></span><span class="adv-text"></span></button>
+    <button class="spin-pill" id="spinpill" hidden>FREE SPIN</button>
     <div class="fervor" id="fervor" hidden><span class="lbl" id="ferv-lbl">FERVOR ×1.0</span><div class="track"><div id="ferv-fill"></div></div></div>
   </div>
 
@@ -63,6 +65,18 @@
   <div class="op-cards" id="op-cards"></div>
   <div class="op-actions"><button class="btn ghost" id="op-all">Reveal all</button><button class="btn gold" id="op-done" hidden>Collect</button></div>
 </div>
+
+<div class="modal spinov" id="spinov" hidden>
+  <div class="card" role="dialog" aria-modal="true" aria-labelledby="spin-band">
+    <div class="card-band" id="spin-band">The Queen's Lottery</div>
+    <div class="card-body">
+      <div class="spin-wrap"><div class="spin-pointer"></div><svg id="spin-wheel" viewBox="-100 -100 200 200" aria-hidden="true"></svg><div class="spin-hub"></div></div>
+      <p id="spin-msg"></p>
+      <div class="ad-actions"><button class="btn ghost" id="spin-close">Close</button><button class="btn gold" id="spin-btn">Spin</button></div>
+    </div>
+  </div>
+</div>
+<canvas class="confetti" id="confetti" hidden></canvas>
 
 <div class="modal" id="adov" hidden style="z-index:40">
   <div class="card" role="dialog" aria-modal="true" aria-labelledby="ad-band">
