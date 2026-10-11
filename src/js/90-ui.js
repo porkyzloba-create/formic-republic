@@ -26,7 +26,12 @@ function buildTicker(){
   $('ticker').innerHTML = html + html;
 }
 
+// Settings → "Pop-up notifications" off: no toasts, except a warning that answers something the
+// player just tapped ("Not enough amber", "Purchase not completed"), so a tap never goes silent.
+let lastInputAt = 0;
+function toastAllowed(tone, now){ return !S || !S.settings || S.settings.toasts !== false || (tone === 'bad' && (now || Date.now()) - lastInputAt < 1500); }
 function toast(title, text, tone, ic){
+  if (!toastAllowed(tone)) return;
   const box = $('toasts');
   const el = document.createElement('div');
   el.className = 'toast ' + (tone||'');
@@ -285,7 +290,8 @@ function render(){
       </dl>
       <button class="gbtn big share-btn" data-share="record">${icon('up')} Share my colony</button>
       <button class="btn ghost" id="f-wipe"></button>
-      ${privacyPanelHTML()}
+      <button class="btn ghost" data-settings>Settings</button>
+      ${privacyLinks()}
     </div>`;
   }
   refresh();
@@ -622,6 +628,7 @@ function onPanelClick(e){
   const tb = e.target.closest('[data-torch]'); if (tb){ buyTorch(tb.dataset.torch); return; }
   if (e.target.closest('[data-primpack]')){ buyPrimPack(); return; }
   if (e.target.closest('[data-policy]')){ showPolicy(); return; }
+  if (e.target.closest('[data-settings]')){ showSettings(); return; }
   if (e.target.closest('[data-stats]')){ const t = e.target.closest('[data-stats]'); if (t.disabled) return; Analytics.setStats(S.privacy.stats === false); save(); render();
     toast('Play statistics', S.privacy.stats ? 'Switched on. Thank you, comrade.' : 'Switched off. Nothing more will be sent.', 'neutral', 'scroll'); return; }
   if (e.target.closest('[data-adchoices]')){ Native.post('adchoices', {}); return; }

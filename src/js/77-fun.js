@@ -217,6 +217,7 @@ const Fun = {
     }
   },
   say(line, go){
+    if (S.settings && S.settings.advisor === false) return;
     const el = $('advisor'); if (!el) return;
     el.querySelector('.adv-text').textContent = line;
     el.dataset.go = go || ''; el.classList.toggle('has-go', !!go);

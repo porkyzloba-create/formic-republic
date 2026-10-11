@@ -317,3 +317,16 @@ test('the one-time medal fill: browser preview only, once per save', () => {
   g.run('S.medals = []'); assert.equal(g.run('previewMedals()'), false); assert.equal(g.S.medals.length, 0);
   const h = loadGame(); h.newGame(); h.run(`PLATFORM.id = 'steam'`); assert.equal(h.run('previewMedals()'), false);
 });
+
+test('settings: defaults, old saves, kept through a flight and a wipe; notifications off', () => {
+  const g = loadGame(); g.newGame();
+  assert.deepEqual({...g.S.settings}, { toasts: true, haptics: true, advisor: true });
+  assert.equal(g.run('normalize({lifetime:5}).settings.toasts'), true);
+  g.run(`toggleSetting('toasts'); toggleSetting('sound'); S.ascLife = 8e9; nuptialFlight(S);`);
+  assert.equal(g.S.settings.toasts, false); assert.equal(g.S.sound, true);
+  g.run('wipeSave()'); assert.equal(g.S.settings.toasts, false); assert.equal(g.S.sound, true);
+  assert.equal(g.run(`lastInputAt = 0; toastAllowed('gold')`), false);
+  assert.equal(g.run(`toastAllowed('bad')`), false, 'a warning nobody tapped for stays hidden');
+  assert.equal(g.run(`lastInputAt = Date.now(); toastAllowed('bad')`), true, 'a warning answering a tap still shows');
+  g.run(`toggleSetting('toasts')`); assert.equal(g.run(`toastAllowed('gold')`), true);
+});

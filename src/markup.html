@@ -14,7 +14,7 @@
       </div>
     </div>
     <div class="side">
-      <div class="side-row"><button class="gem-pill" id="gempill" aria-label="Amber gems, open the shop"></button><button class="snd" id="snd" aria-pressed="true" aria-label="Sound"></button></div>
+      <div class="side-row"><button class="gem-pill" id="gempill" aria-label="Amber gems, open the shop"></button><button class="snd" id="snd" aria-pressed="true" aria-label="Sound"></button><button class="snd" id="setbtn" aria-label="Settings"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button></div>
       <button class="flightbtn" id="flightbtn" aria-label="Nuptial Flight"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17C8 17 14 13 21 4c-2 8-7 13-13 15"/><path d="M7 14c3-1 6-3 9-6M10 18c2-1 4-3 6-5"/></svg><span>Flight</span><i class="badge red" id="flbadge" hidden></i></button>
     </div>
   </div>
@@ -77,6 +77,16 @@
   </div>
 </div>
 <canvas class="confetti" id="confetti" hidden></canvas>
+
+<div class="modal setov" id="setov" hidden>
+  <div class="card" role="dialog" aria-modal="true" aria-labelledby="set-band">
+    <div class="card-band" id="set-band">Settings</div>
+    <div class="card-body">
+      <div class="set-body" id="set-body"></div>
+      <button class="btn gold" id="set-close">Done</button>
+    </div>
+  </div>
+</div>
 
 <div class="modal policyov" id="policyov" hidden>
   <div class="card" role="dialog" aria-modal="true" aria-labelledby="pol-band">

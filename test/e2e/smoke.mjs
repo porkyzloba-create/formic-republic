@@ -161,14 +161,27 @@ try {
     await page.click('[data-autotoggle]');
     if (await ev(() => autoTapActive())) throw new Error('could not switch it off');
   });
-  await step('privacy: policy reader, statistics switch, delete the league entry', async () => {
-    await page.click('#flightbtn'); await page.waitForTimeout(200);
-    if (await page.locator('[data-stats]').isEnabled()) throw new Error('statistics switch should be disabled in the browser preview');
-    await ev(() => { PLATFORM.id = 'android'; render(); });
+  await step('settings: notifications off, sound, statistics switch', async () => {
+    await page.click('#setbtn'); await page.waitForTimeout(150);
+    if (!(await page.locator('#setov').isVisible())) throw new Error('settings did not open');
+    if (await page.locator('#setov [data-stats]').isEnabled()) throw new Error('statistics switch should be disabled in the browser preview');
+    await page.click('#setov [data-setting="toasts"]');
+    if (await ev(() => S.settings.toasts !== false)) throw new Error('notifications switch did not turn off');
+    const shown = await ev(() => { document.getElementById('toasts').innerHTML = ''; lastInputAt = 0; toast('Test', 'should be hidden', 'gold'); toast('Oops', 'also hidden', 'bad'); return document.getElementById('toasts').children.length; });
+    if (shown) throw new Error('toasts still shown with notifications off');
+    const warn = await ev(() => { lastInputAt = Date.now(); toast('Not enough amber', 'answers a tap', 'bad'); return document.getElementById('toasts').children.length; });
+    if (warn !== 1) throw new Error('a warning for a tap should still show');
+    await page.click('#setov [data-setting="toasts"]');
+    await page.click('#setov [data-setting="sound"]'); await page.click('#setov [data-setting="sound"]');
+    await ev(() => { PLATFORM.id = 'android'; showSettings(); });
     if (!(await ev(() => Analytics.on()))) throw new Error('statistics should default to on in store builds');
-    await page.click('[data-stats]');
+    await page.click('#setov [data-stats]');
     if (await ev(() => Analytics.on() || S.privacy.stats)) throw new Error('statistics switch did not turn them off');
-    await page.click('[data-stats]'); await ev(() => { PLATFORM.id = 'web'; render(); });
+    await page.click('#setov [data-stats]'); await ev(() => { PLATFORM.id = 'web'; });
+    await page.click('#set-close'); if (await page.locator('#setov').isVisible()) throw new Error('settings did not close');
+  });
+  await step('privacy: policy reader, delete the league entry', async () => {
+    await page.click('#flightbtn'); await page.waitForTimeout(200);
     await page.click('#list [data-policy]'); await page.waitForTimeout(150);
     if (!(await ev(() => /Privacy Policy/.test(document.getElementById('pol-text').textContent) && /Delete my league entry/.test(document.getElementById('pol-text').textContent)))) throw new Error('policy text missing');
     await page.click('#pol-close'); if (await page.locator('#policyov').isVisible()) throw new Error('policy did not close');

@@ -83,6 +83,6 @@ branch `main`, folder `/docs`); it is then
 `https://porkyzloba-create.github.io/formic-republic/privacy.html`. The store shells should pass that
 as `FR_PLATFORM.privacyUrl` (adds an "Open online" button). Fill in `[CONTACT EMAIL]` before release.
 
-Player controls the policy promises: the "Share anonymous play statistics" switch (Flight tab,
+Player controls the policy promises: the "Share anonymous play statistics" switch (Settings,
 `S.privacy.stats`, kept through flights and save wipes) and "Delete my league entry" (League tab,
 server function `fr_delete_player`).

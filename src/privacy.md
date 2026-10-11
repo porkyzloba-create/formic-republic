@@ -46,7 +46,7 @@ To learn which parts of the game people enjoy and where they get stuck, the stor
 
 The PostHog project is set to **discard IP addresses**, and the game asks PostHog not to look up your location. No screen recordings are made.
 
-**Why:** our legitimate interest in improving the game. **Your choice:** switch off "Share anonymous play statistics" under Privacy in the Flight tab; nothing more is sent from then on. To have statistics already sent deleted, email us the install ID shown in the same place. Deleting your save also starts a new install ID.
+**Why:** our legitimate interest in improving the game. **Your choice:** switch off "Share anonymous play statistics" in Settings (the gear at the top of the screen); nothing more is sent from then on. To have statistics already sent deleted, email us the install ID shown in the same place. Deleting your save also starts a new install ID.
 
 **How long:** statistics are kept for as long as they're useful for improving the game, and at most 2 years.
 

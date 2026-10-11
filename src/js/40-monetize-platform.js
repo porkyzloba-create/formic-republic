@@ -77,9 +77,22 @@ function showPolicy(){
   $('pol-web').hidden = !PLATFORM.privacyUrl;
   $('policyov').hidden = false; $('pol-text').scrollTop = 0; $('pol-close').focus();
 }
+const SETTINGS = [
+  ['sound',   'Sound',                 'Sound effects.'],
+  ['haptics', 'Vibration',             'A buzz on taps, rare cards and big moments.'],
+  ['toasts',  'Pop-up notifications',  'The messages at the top of the screen. Off hides them, except a warning when something you tapped did not work.'],
+  ['advisor', "Comrade Ant's tips",     'The mascot who pops up on the hill with jokes and tips.'],
+];
+function settingOn(k){ return k === 'sound' ? !!S.sound : S.settings[k] !== false; }
+function toggleSetting(k){ if (k === 'sound') S.sound = !S.sound; else S.settings[k] = !settingOn(k); if (k === 'advisor' && !S.settings.advisor) Fun.hideAdvisor(); save(); refresh(); }
+function settingsHTML(){
+  return SETTINGS.map(([k, name, sub]) => `<div class="srow priv-row"><div class="row-main"><div class="row-name">${name}</div><div class="row-sub">${sub}</div></div>
+      <button class="tgl" role="switch" data-setting="${k}" aria-checked="${settingOn(k)}" aria-label="${name}"><i></i></button></div>`).join('') + privacyPanelHTML();
+}
+function showSettings(){ $('set-body').innerHTML = settingsHTML(); $('setov').hidden = false; $('set-close').focus(); }
 function privacyPanelHTML(){
   const on = Analytics.available(), st = S.privacy.stats !== false;
-  return `<div class="sec-h"><h3 class="ink">Privacy</h3></div>
+  return `<div class="shop-sec">Privacy</div>
     <div class="srow priv-row"><div class="row-main"><div class="row-name">Share anonymous play statistics</div>
       <div class="row-sub">${on ? 'Events such as finishing the tutorial or opening a pack, with a random install ID. No name, email, ad ID or location.' : 'Off in the browser preview: nothing is sent.'}</div>
       ${on ? `<div class="row-sub priv-id">Install ID: <code>${esc(st ? Analytics.id() : (S.flags.aid || 'none yet'))}</code></div>` : ''}</div>

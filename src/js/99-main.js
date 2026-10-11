@@ -149,8 +149,18 @@ function start(data){
   $('advisor').addEventListener('click', e => { e.stopPropagation(); const go = $('advisor').dataset.go; Fun.hideAdvisor(); if (go === 'pass'){ goTab('pass'); } else if (go === 'ranks'){ goTab('ranks'); } else if (go === 'shop'){ goTab('shop'); } else if (go){ goTab(go); } });
   $('spin-btn').addEventListener('click', () => Fun.spin());
   $('pol-web').addEventListener('click', () => openExternal(PLATFORM.privacyUrl));
+  $('setbtn').addEventListener('click', () => showSettings());
+  $('setov').addEventListener('click', e => {
+    if (e.target.id === 'setov' || e.target.closest('#set-close')){ $('setov').hidden = true; return; }
+    const t = e.target.closest('[data-setting]'); if (t){ toggleSetting(t.dataset.setting); $('set-body').innerHTML = settingsHTML(); return; }
+    if (e.target.closest('[data-policy]')){ showPolicy(); return; }
+    if (e.target.closest('[data-adchoices]')){ Native.post('adchoices', {}); return; }
+    const st = e.target.closest('[data-stats]'); if (st && !st.disabled){ Analytics.setStats(S.privacy.stats === false); save(); $('set-body').innerHTML = settingsHTML(); }
+  });
+  document.addEventListener('pointerdown', () => { lastInputAt = Date.now(); }, true);
+  document.addEventListener('keydown', () => { lastInputAt = Date.now(); }, true);
   $('policyov').addEventListener('click', e => { if (e.target.id === 'policyov' || e.target.closest('#pol-close')) $('policyov').hidden = true; });
-  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('policyov').hidden) $('policyov').hidden = true; });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape'){ if (!$('policyov').hidden) $('policyov').hidden = true; else if (!$('setov').hidden) $('setov').hidden = true; } });
   $('spin-close').addEventListener('click', () => { if (!Fun.spinBusy){ $('spinov').hidden = true; refresh(); } });
   addEventListener('pagehide', () => save(true));
   Native.post('ready', {});                                    // shell answers with local store prices

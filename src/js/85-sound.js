@@ -27,5 +27,5 @@ const Sound = (() => {
     stamp: () => { blip(110, .12, 'square', .05); blip(784, .12, 'triangle', .04, .12); blip(1046, .2, 'triangle', .04, .22); },
   };
 })();
-function buzz(p){ try { navigator.vibrate && navigator.vibrate(p); } catch(e){} }
+function buzz(p){ if (S && S.settings && S.settings.haptics === false) return; try { navigator.vibrate && navigator.vibrate(p); } catch(e){} }
 

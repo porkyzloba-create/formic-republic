@@ -18,3 +18,10 @@
 .tgl:disabled{opacity:.45;cursor:default}
 .lb-del{display:block;margin:18px auto 6px;font-size:12px}
 .lb-del.armed{color:var(--banner,#E5392D);font-weight:800}
+.setov{z-index:44}
+.setov .card{max-width:420px;width:100%}
+.set-body{display:flex;flex-direction:column;gap:8px;max-height:min(64vh,560px);overflow-y:auto;overscroll-behavior:contain;margin:0 -2px;padding:0 2px}
+.set-body .srow.priv-row{margin:0}
+.set-body .shop-sec{padding:8px 2px 0}
+.set-body .privacy-links{padding:4px 0 2px}
+#setbtn svg{font-size:16px}
