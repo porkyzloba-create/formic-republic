@@ -1134,6 +1134,17 @@ body{background:var(--paper);background-image:radial-gradient(rgba(29,26,43,.035
 .tgl:disabled{opacity:.45;cursor:default}
 .lb-del{display:block;margin:18px auto 6px;font-size:12px}
 .lb-del.armed{color:var(--banner,#E5392D);font-weight:800}
+/* Hero of the Republic: the all-medals reward card at the top of Goals → Medals */
+.hero-card{display:grid;grid-template-columns:48px 1fr;gap:12px;align-items:center;padding:14px;border-radius:18px;background:var(--ink,#1D1A2B);color:#fff;border:2px solid var(--ink,#1D1A2B);box-shadow:0 4px 0 rgba(29,26,43,.35)}
+.hero-card.won{background:linear-gradient(135deg,#FFC738,#F29A00);color:var(--ink,#1D1A2B)}
+.hero-ic{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;background:var(--crumb,#FFC738);color:var(--ink,#1D1A2B);font-size:24px;border:2px solid #fff}
+.hero-card.won .hero-ic{background:#fff;border-color:var(--ink,#1D1A2B)}
+.hero-card .ph-eyebrow{color:var(--crumb,#FFC738)}
+.hero-card.won .ph-eyebrow{color:var(--ink,#1D1A2B)}
+.hero-name{font-family:var(--f-display);font-size:20px;line-height:1.1}
+.hero-sub{font-size:11.5px;font-weight:700;opacity:.85;margin-top:3px;line-height:1.35}
+.hero-card .mp{background:rgba(255,255,255,.2);margin-top:7px;height:5px}
+.hero-card .mp div{background:var(--crumb,#FFC738);opacity:1}
 </style>
 
 <div class="app">
@@ -1644,6 +1655,9 @@ const MEDALS = [
   M('life21','Heat Death of Hunger','Gather 1 Sx crumbs in total', s=>s.lifetime, 1e21),
 ];
 
+
+// Every medal won: a one-time haul and a permanent title (S.flags.hero) that doubles all output.
+const HERO = {name:'Hero of the Republic', gems:3000, packs:{epic:5}, jelly:10, mult:2};
 /* ============================================================
    STATE
    ============================================================ */
@@ -1696,7 +1710,8 @@ function derive(s, now){
   d.rep = rp;
   const hardN = Object.values(s.hard||{}).reduce((a,b)=>a+b,0);
   d.warMult = Math.pow(1.15, (s.war||{}).beaten||0);
-  d.endMult = d.warMult * (s.pass && s.pass.premium ? 1 + PREM_OUTPUT : 1) * (1 + .05*(s.crownsTotal||0)) * (1 + .25*((s.doctrine||{}).network||0)) * Math.pow(1.2, hardN) * (1 + .05*(rp.eff||0));
+  d.hero = s.flags && s.flags.hero ? HERO.mult : 1;
+  d.endMult = d.hero * d.warMult * (s.pass && s.pass.premium ? 1 + PREM_OUTPUT : 1) * (1 + .05*(s.crownsTotal||0)) * (1 + .25*((s.doctrine||{}).network||0)) * Math.pow(1.2, hardN) * (1 + .05*(rp.eff||0));
   let pb = 1, tb = 1; d.buffs = [];
   for (const b of s.buffs) if (b.until > now){ pb *= b.prod||1; tb *= b.tap||1; d.buffs.push(b); }
   d.prodBuff = pb; d.tapBuff = tb;
@@ -1735,7 +1750,7 @@ function availableUpgrades(s){ return UPGRADES.filter(u => !s.bought.includes(u.
 function nextLockedUpgrade(s){ return UPGRADES.filter(u => !s.bought.includes(u.id) && !u.unlocked(s)).sort((a,b) => a.cost-b.cost)[0]; }
 
 const PERMA = ['abyss','dir','medals','seenMedals','lifetime','taps','picnics','anteaters','flyers','rubbles','incidents','raids','daily','quotaN','flags','sound','started',
-  'gems','inv','packs','cards','shards','pass','pity','shopDay','tapMerit','crowns','crownsTotal','supers','doctrine','war','hard','online','spin','auto','privacy'];
+  'gems','inv','packs','cards','shards','pass','pity','shopDay','tapMerit','crowns','crownsTotal','supers','doctrine','war','hard','online','spin','auto','privacy','iap','ads'];
 function resetRun(s, extra){ const k = {}; for (const f of PERMA) k[f] = s[f]; Object.assign(s, fresh(), k, extra); }
 function nuptialFlight(s, force){
   const g = pherGain(s); if (g < 1 && !force) return 0;
@@ -1757,7 +1772,13 @@ function supercolony(s){
 // points are kept, because the server already holds them (dropping them would orphan the
 // player's leaderboard entry and make the next reports look like a score going backwards).
 // The privacy choices (S.privacy) are kept too. The league entry is deleted separately, in the League tab.
-function wipeSave(){ const online = S.online, privacy = S.privacy; S = fresh(); S.online = online; S.privacy = privacy; return S; }
+// Real-money purchases (S.iap) survive the wipe as well: the player paid for them.
+function wipeSave(){
+  const online = S.online, privacy = S.privacy, iap = S.iap, forever = S.auto.forever;
+  S = fresh(); S.online = online; S.privacy = privacy; S.iap = iap;
+  if (forever || iap.owned.autotap){ S.auto.forever = true; S.auto.on = true; }
+  return S;
+}
 
 /* ============================================================
    PERSISTENCE
@@ -1944,6 +1965,11 @@ function devHTML(){
 function previewGift(){
   if (PLATFORM.id !== 'web' || S.flags.gift500) return false;
   S.flags.gift500 = true; addGems(500); return true;
+}
+// A one-time fill of every medal for the browser preview only (asked for once, 2026-10-11).
+function previewMedals(){
+  if (PLATFORM.id !== 'web' || S.flags.allMedalsGift) return false;
+  S.flags.allMedalsGift = true; S.medals = MEDALS.map(m => m.id); S.seenMedals = 0; D = derive(S); return true;
 }
 function devAction(k){
   if (k === 'skip' || k === 'super'){ if (tutActive()){ S.flags.tut = TUT.length; S.quota = null; genQuota(); } }
@@ -2400,6 +2426,16 @@ function buyEdict(id){
   S.jelly -= e.cost(l); S.edicts[id] = l+1; return true;
 }
 
+
+/* ---------- Hero of the Republic (all medals) ---------- */
+function allMedalsWon(s){ s = s || S; return MEDALS.every(m => s.medals.includes(m.id)); }
+function grantHero(){
+  if (S.flags.hero || !allMedalsWon()) return false;
+  S.flags.hero = true; addGems(HERO.gems); S.jelly += HERO.jelly;
+  for (const [k, n] of Object.entries(HERO.packs)) S.packs[k] = (S.packs[k] || 0) + n;
+  D = derive(S);
+  return true;
+}
 /* ---------- raids (expeditions) ---------- */
 function expUnlocked(x){ return !x.req || (S.owned[x.req]||0) > 0; }
 function expDur(x){ return x.dur * D.expSpeed * (x.id === 'kitchen' && !S.raids && !S.exp.kitchen ? .25 : 1); }
@@ -3848,7 +3884,12 @@ function render(){
   } else if (tab === 'medals'){
     S.seenMedals = S.medals.length;
     sub.innerHTML = `<span><b>${S.medals.length}</b> of ${MEDALS.length} medals</span><span>+${S.medals.length}% to all output</span>`;
-    list.innerHTML = `<div class="medals">${MEDALS.map(m => {
+    const heroN = MEDALS.filter(m => S.medals.includes(m.id)).length;
+    list.innerHTML = `<div class="hero-card${S.flags.hero ? ' won' : ''}"><div class="hero-ic">${icon('crown')}</div><div class="row-main">
+      <div class="ph-eyebrow">${S.flags.hero ? 'TITLE EARNED' : `REWARD FOR ALL ${MEDALS.length} MEDALS`}</div><div class="hero-name">${HERO.name}</div>
+      <div class="hero-sub">${S.flags.hero ? 'All output ×2 forever.' : `${fmt(HERO.gems)} amber · ${HERO.packs.epic} Politburo Packs · ${HERO.jelly} royal jelly · all output ×2 forever`}</div>
+      ${S.flags.hero ? '' : `<div class="mp"><div style="width:${heroN / MEDALS.length * 100}%"></div></div><div class="hero-sub">${heroN} / ${MEDALS.length} medals</div>`}</div></div>`
+      + `<div class="medals">${MEDALS.map(m => {
       const won = S.medals.includes(m.id);
       const pct = won ? 100 : Math.min(100, (m.cur(S, D)||0) / m.target * 100);
       return `<div class="medal ${won?'won':''}"><div class="disc" aria-hidden="true">${icon('star')}</div>
@@ -4158,6 +4199,11 @@ function checkMedals(){
     }
   }
   if (any){ Sound.good(); D = derive(S); if (tab==='medals') render(); }
+  if (grantHero()){
+    confetti(); Sound.stamp(); buzz([40, 60, 120]); save();
+    showModal('Every medal won', HERO.name, `The whole Republic salutes you. +${HERO.gems.toLocaleString("en-US")} amber, ${HERO.packs.epic} Politburo Packs and ${HERO.jelly} royal jelly, and all output is doubled forever.`, 'Long live the hill');
+    if (tab === 'medals') render();
+  }
 }
 
 function onPanelClick(e){
@@ -4838,6 +4884,7 @@ function start(data){
     showModal('A gift from the Politburo', '+50 amber', 'Amber buys card packs, usables and the Revolution Pass in the Shop. You also got a free Worker Pack (open it in Cards) and two usables on your belt.', 'Glory to the hill');
     save();
   }
+  if (previewMedals()){ toast('Medals filled in', `All ${MEDALS.length} medals are yours (browser preview).`, 'medal', 'star'); checkMedals(); save(); }
   if (previewGift()){ showModal('A gift from the Politburo', '+500 amber', 'A one-time gift for the browser preview. Spend it in the Shop.', 'Glory to the hill'); save(); }
 
   const stage = $('stage');

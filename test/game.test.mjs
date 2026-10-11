@@ -282,3 +282,38 @@ test('the one-time +500 amber preview gift: browser preview only, once per save'
   const h = loadGame(); h.newGame(); h.run(`PLATFORM.id = 'android'`);
   assert.equal(h.run('previewGift()'), false); assert.equal(h.S.gems, 0);
 });
+
+test('real-money purchases survive a Nuptial Flight, a Supercolony and a save wipe', () => {
+  const g = loadGame(); g.newGame({ ascLife: 8e9, pher: 200 });
+  g.run(`grantIAP('party'); grantIAP('autotap'); grantIAP('amber2'); S.ads.n.amber = 5;`);
+  g.run('nuptialFlight(S)');
+  assert.equal(g.S.iap.owned.party, true); assert.equal(g.S.iap.owned.autotap, true); assert.equal(g.S.iap.first.amber2, true);
+  assert.equal(g.S.ads.n.amber, 5, 'daily ad caps must not refill on a flight');
+  g.run('S.pher = 200; supercolony(S)');
+  assert.equal(g.S.iap.owned.party, true);
+  g.run('wipeSave()');
+  assert.equal(g.S.iap.owned.party, true); assert.equal(g.S.iap.owned.autotap, true); assert.equal(g.S.auto.forever, true);
+  assert.equal(g.run('adFree()'), true);
+});
+
+test('Hero of the Republic: all medals pay once and double output forever', () => {
+  const g = loadGame(); g.newGame({ owned: { forager: 10 } });
+  const before = g.run('derive(S).baseCps');
+  assert.equal(g.run('grantHero()'), false);
+  g.run('S.medals = MEDALS.map(m => m.id)');
+  const gems = g.S.gems;
+  assert.equal(g.run('grantHero()'), true);
+  assert.equal(g.S.gems, gems + 3000); assert.equal(g.S.packs.epic, 5); assert.equal(g.S.jelly, 10);
+  assert.equal(g.run('grantHero()'), false);
+  const after = g.run('derive(S).baseCps');
+  const medalBoost = 1 + 0.01 * g.run('MEDALS.length');
+  assert.ok(Math.abs(after / before - 2 * medalBoost) < 1e-9, 'output doubled on top of the medal bonus');
+  g.run('S.ascLife = 8e9; nuptialFlight(S)'); assert.equal(g.S.flags.hero, true);
+});
+
+test('the one-time medal fill: browser preview only, once per save', () => {
+  const g = loadGame(); g.newGame();
+  assert.equal(g.run('previewMedals()'), true); assert.equal(g.S.medals.length, g.run('MEDALS.length'));
+  g.run('S.medals = []'); assert.equal(g.run('previewMedals()'), false); assert.equal(g.S.medals.length, 0);
+  const h = loadGame(); h.newGame(); h.run(`PLATFORM.id = 'steam'`); assert.equal(h.run('previewMedals()'), false);
+});

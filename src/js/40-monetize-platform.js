@@ -103,6 +103,11 @@ function previewGift(){
   if (PLATFORM.id !== 'web' || S.flags.gift500) return false;
   S.flags.gift500 = true; addGems(500); return true;
 }
+// A one-time fill of every medal for the browser preview only (asked for once, 2026-10-11).
+function previewMedals(){
+  if (PLATFORM.id !== 'web' || S.flags.allMedalsGift) return false;
+  S.flags.allMedalsGift = true; S.medals = MEDALS.map(m => m.id); S.seenMedals = 0; D = derive(S); return true;
+}
 function devAction(k){
   if (k === 'skip' || k === 'super'){ if (tutActive()){ S.flags.tut = TUT.length; S.quota = null; genQuota(); } }
   if (k === 'super'){

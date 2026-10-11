@@ -236,7 +236,12 @@ function render(){
   } else if (tab === 'medals'){
     S.seenMedals = S.medals.length;
     sub.innerHTML = `<span><b>${S.medals.length}</b> of ${MEDALS.length} medals</span><span>+${S.medals.length}% to all output</span>`;
-    list.innerHTML = `<div class="medals">${MEDALS.map(m => {
+    const heroN = MEDALS.filter(m => S.medals.includes(m.id)).length;
+    list.innerHTML = `<div class="hero-card${S.flags.hero ? ' won' : ''}"><div class="hero-ic">${icon('crown')}</div><div class="row-main">
+      <div class="ph-eyebrow">${S.flags.hero ? 'TITLE EARNED' : `REWARD FOR ALL ${MEDALS.length} MEDALS`}</div><div class="hero-name">${HERO.name}</div>
+      <div class="hero-sub">${S.flags.hero ? 'All output ×2 forever.' : `${fmt(HERO.gems)} amber · ${HERO.packs.epic} Politburo Packs · ${HERO.jelly} royal jelly · all output ×2 forever`}</div>
+      ${S.flags.hero ? '' : `<div class="mp"><div style="width:${heroN / MEDALS.length * 100}%"></div></div><div class="hero-sub">${heroN} / ${MEDALS.length} medals</div>`}</div></div>`
+      + `<div class="medals">${MEDALS.map(m => {
       const won = S.medals.includes(m.id);
       const pct = won ? 100 : Math.min(100, (m.cur(S, D)||0) / m.target * 100);
       return `<div class="medal ${won?'won':''}"><div class="disc" aria-hidden="true">${icon('star')}</div>
@@ -546,6 +551,11 @@ function checkMedals(){
     }
   }
   if (any){ Sound.good(); D = derive(S); if (tab==='medals') render(); }
+  if (grantHero()){
+    confetti(); Sound.stamp(); buzz([40, 60, 120]); save();
+    showModal('Every medal won', HERO.name, `The whole Republic salutes you. +${HERO.gems.toLocaleString("en-US")} amber, ${HERO.packs.epic} Politburo Packs and ${HERO.jelly} royal jelly, and all output is doubled forever.`, 'Long live the hill');
+    if (tab === 'medals') render();
+  }
 }
 
 function onPanelClick(e){

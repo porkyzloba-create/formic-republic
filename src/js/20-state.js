@@ -50,7 +50,8 @@ function derive(s, now){
   d.rep = rp;
   const hardN = Object.values(s.hard||{}).reduce((a,b)=>a+b,0);
   d.warMult = Math.pow(1.15, (s.war||{}).beaten||0);
-  d.endMult = d.warMult * (s.pass && s.pass.premium ? 1 + PREM_OUTPUT : 1) * (1 + .05*(s.crownsTotal||0)) * (1 + .25*((s.doctrine||{}).network||0)) * Math.pow(1.2, hardN) * (1 + .05*(rp.eff||0));
+  d.hero = s.flags && s.flags.hero ? HERO.mult : 1;
+  d.endMult = d.hero * d.warMult * (s.pass && s.pass.premium ? 1 + PREM_OUTPUT : 1) * (1 + .05*(s.crownsTotal||0)) * (1 + .25*((s.doctrine||{}).network||0)) * Math.pow(1.2, hardN) * (1 + .05*(rp.eff||0));
   let pb = 1, tb = 1; d.buffs = [];
   for (const b of s.buffs) if (b.until > now){ pb *= b.prod||1; tb *= b.tap||1; d.buffs.push(b); }
   d.prodBuff = pb; d.tapBuff = tb;
@@ -89,7 +90,7 @@ function availableUpgrades(s){ return UPGRADES.filter(u => !s.bought.includes(u.
 function nextLockedUpgrade(s){ return UPGRADES.filter(u => !s.bought.includes(u.id) && !u.unlocked(s)).sort((a,b) => a.cost-b.cost)[0]; }
 
 const PERMA = ['abyss','dir','medals','seenMedals','lifetime','taps','picnics','anteaters','flyers','rubbles','incidents','raids','daily','quotaN','flags','sound','started',
-  'gems','inv','packs','cards','shards','pass','pity','shopDay','tapMerit','crowns','crownsTotal','supers','doctrine','war','hard','online','spin','auto','privacy'];
+  'gems','inv','packs','cards','shards','pass','pity','shopDay','tapMerit','crowns','crownsTotal','supers','doctrine','war','hard','online','spin','auto','privacy','iap','ads'];
 function resetRun(s, extra){ const k = {}; for (const f of PERMA) k[f] = s[f]; Object.assign(s, fresh(), k, extra); }
 function nuptialFlight(s, force){
   const g = pherGain(s); if (g < 1 && !force) return 0;
@@ -111,5 +112,11 @@ function supercolony(s){
 // points are kept, because the server already holds them (dropping them would orphan the
 // player's leaderboard entry and make the next reports look like a score going backwards).
 // The privacy choices (S.privacy) are kept too. The league entry is deleted separately, in the League tab.
-function wipeSave(){ const online = S.online, privacy = S.privacy; S = fresh(); S.online = online; S.privacy = privacy; return S; }
+// Real-money purchases (S.iap) survive the wipe as well: the player paid for them.
+function wipeSave(){
+  const online = S.online, privacy = S.privacy, iap = S.iap, forever = S.auto.forever;
+  S = fresh(); S.online = online; S.privacy = privacy; S.iap = iap;
+  if (forever || iap.owned.autotap){ S.auto.forever = true; S.auto.on = true; }
+  return S;
+}
 

@@ -330,3 +330,13 @@ function buyEdict(id){
   S.jelly -= e.cost(l); S.edicts[id] = l+1; return true;
 }
 
+
+/* ---------- Hero of the Republic (all medals) ---------- */
+function allMedalsWon(s){ s = s || S; return MEDALS.every(m => s.medals.includes(m.id)); }
+function grantHero(){
+  if (S.flags.hero || !allMedalsWon()) return false;
+  S.flags.hero = true; addGems(HERO.gems); S.jelly += HERO.jelly;
+  for (const [k, n] of Object.entries(HERO.packs)) S.packs[k] = (S.packs[k] || 0) + n;
+  D = derive(S);
+  return true;
+}

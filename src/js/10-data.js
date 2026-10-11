@@ -319,3 +319,6 @@ const MEDALS = [
   M('life21','Heat Death of Hunger','Gather 1 Sx crumbs in total', s=>s.lifetime, 1e21),
 ];
 
+
+// Every medal won: a one-time haul and a permanent title (S.flags.hero) that doubles all output.
+const HERO = {name:'Hero of the Republic', gems:3000, packs:{epic:5}, jelly:10, mult:2};
