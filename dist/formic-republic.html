@@ -1939,6 +1939,12 @@ function devHTML(){
     <button data-dev="prim" ${abyssUnlocked() ? '' : 'disabled'}>+3 Primordial Packs</button>
     <button data-dev="prim10k">+10,000 Primordial Packs</button></div></div>`;
 }
+// A one-time +500 amber gift for the browser preview only (asked for once, 2026-10-11).
+// Never in the Google Play or Steam builds; once per save (S.flags.gift500).
+function previewGift(){
+  if (PLATFORM.id !== 'web' || S.flags.gift500) return false;
+  S.flags.gift500 = true; addGems(500); return true;
+}
 function devAction(k){
   if (k === 'skip' || k === 'super'){ if (tutActive()){ S.flags.tut = TUT.length; S.quota = null; genQuota(); } }
   if (k === 'super'){
@@ -4832,6 +4838,7 @@ function start(data){
     showModal('A gift from the Politburo', '+50 amber', 'Amber buys card packs, usables and the Revolution Pass in the Shop. You also got a free Worker Pack (open it in Cards) and two usables on your belt.', 'Glory to the hill');
     save();
   }
+  if (previewGift()){ showModal('A gift from the Politburo', '+500 amber', 'A one-time gift for the browser preview. Spend it in the Shop.', 'Glory to the hill'); save(); }
 
   const stage = $('stage');
   stage.addEventListener('pointerdown', e => {

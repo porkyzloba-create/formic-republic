@@ -93,6 +93,7 @@ function start(data){
     showModal('A gift from the Politburo', '+50 amber', 'Amber buys card packs, usables and the Revolution Pass in the Shop. You also got a free Worker Pack (open it in Cards) and two usables on your belt.', 'Glory to the hill');
     save();
   }
+  if (previewGift()){ showModal('A gift from the Politburo', '+500 amber', 'A one-time gift for the browser preview. Spend it in the Shop.', 'Glory to the hill'); save(); }
 
   const stage = $('stage');
   stage.addEventListener('pointerdown', e => {

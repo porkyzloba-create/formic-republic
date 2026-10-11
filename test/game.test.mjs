@@ -274,3 +274,11 @@ test('privacy: the policy is built from src/privacy.md and covers every data flo
   assert.ok(build().includes('const PRIVACY_POLICY = '));
   assert.ok(!/<\/script/i.test(build().split('const PRIVACY_POLICY = ')[1].split('\n')[0]), 'policy must not close the script tag');
 });
+
+test('the one-time +500 amber preview gift: browser preview only, once per save', () => {
+  const g = loadGame(); g.newGame({ gems: 10 });
+  assert.equal(g.run('previewGift()'), true); assert.equal(g.S.gems, 510);
+  assert.equal(g.run('previewGift()'), false); assert.equal(g.S.gems, 510);
+  const h = loadGame(); h.newGame(); h.run(`PLATFORM.id = 'android'`);
+  assert.equal(h.run('previewGift()'), false); assert.equal(h.S.gems, 0);
+});

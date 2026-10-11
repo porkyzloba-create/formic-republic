@@ -97,6 +97,12 @@ function devHTML(){
     <button data-dev="prim" ${abyssUnlocked() ? '' : 'disabled'}>+3 Primordial Packs</button>
     <button data-dev="prim10k">+10,000 Primordial Packs</button></div></div>`;
 }
+// A one-time +500 amber gift for the browser preview only (asked for once, 2026-10-11).
+// Never in the Google Play or Steam builds; once per save (S.flags.gift500).
+function previewGift(){
+  if (PLATFORM.id !== 'web' || S.flags.gift500) return false;
+  S.flags.gift500 = true; addGems(500); return true;
+}
 function devAction(k){
   if (k === 'skip' || k === 'super'){ if (tutActive()){ S.flags.tut = TUT.length; S.quota = null; genQuota(); } }
   if (k === 'super'){
